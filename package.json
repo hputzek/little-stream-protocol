@@ -1,0 +1,31 @@
+{
+  "name": "little-stream-protocol",
+  "version": "1.0.0",
+  "description": "A javascript implementation to send data via little stream",
+  "main": "index.js",
+  "type": "module",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "node  --experimental-modules examples/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hputzek/little-stream-protocol.git"
+  },
+  "keywords": [
+    "led",
+    "esp32",
+    "s",
+    "little-stream",
+    "udp",
+    "protocol"
+  ],
+  "author": "Hendrik Putzek",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hputzek/little-stream-protocol/issues"
+  },
+  "homepage": "https://github.com/hputzek/little-stream-protocol#readme"
+}
