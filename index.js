@@ -19,7 +19,7 @@ const defaultOptions = {
   }
 };
 
-let frameCount = 0
+let frameCount = 0;
 
 const GENERAL_HEADER = 8;
 const MESSAGE_HEADER = 32;
@@ -60,13 +60,19 @@ const chunkArrayBuffer = (arr, len) => {
 };
 
 /**
- * TODO: create an actual checksum :-)
+ * creates a simple 8bit XOR checksum for a given array buffer
  * @param buffer
  * @returns {number}
  */
-const getChecksumFromArrayBuffer = (buffer) => {
-  return 123
-}
+const getChecksumFromArrayBuffer = buffer => {
+  const bufferView = new DataView(buffer, 0);
+  let crc = 0;
+  for (let i = 0; i < buffer.byteLength; i++) {
+    crc = crc ^ bufferView.getUint8(i);
+  }
+  console.log(crc);
+  return crc;
+};
 
 /**
  * Returns an Array of ArrayBuffers where each buffer represents
@@ -77,29 +83,41 @@ const getChecksumFromArrayBuffer = (buffer) => {
 export const getFrameData = frameOptions => {
   const options = { ...defaultOptions, ...frameOptions };
   const payload = options.payload;
-  const fullMessageLength = payload.byteLength;
-
-  const fragmentedMessages = chunkArrayBuffer(payload, options.maxPacketSize - GENERAL_HEADER - MESSAGE_HEADER - FIRST_FRAME_HEADER);
+  const fragmentedMessages = chunkArrayBuffer(
+    payload,
+    options.maxPacketSize - GENERAL_HEADER - MESSAGE_HEADER - FIRST_FRAME_HEADER
+  );
 
   const output = fragmentedMessages.map((message, index) => {
     const isFirstFragment = () => index === 0;
     const HEADER_SIZE = isFirstFragment()
       ? GENERAL_HEADER + MESSAGE_HEADER + FIRST_FRAME_HEADER
       : GENERAL_HEADER + MESSAGE_HEADER;
-    const messageBuffer = new ArrayBuffer(message.byteLength + HEADER_SIZE);
+    const messageBuffer = new ArrayBuffer(message.byteLength + HEADER_SIZE + 1);
 
     const headerView = new DataView(messageBuffer, 0, HEADER_SIZE);
     headerView.setUint8(0, getHeader(options));
     headerView.setUint8(1, options.message.nodeId);
-    headerView.setUint8( 2, options.message.session);
+    headerView.setUint8(2, options.message.session);
     headerView.setUint8(3, frameCount);
-    headerView.setUint8( 4, index);
-    if(isFirstFragment()) {
-      headerView.setUint16(5, messageBuffer.byteLength, true)
-      headerView.setUint8(7,getChecksumFromArrayBuffer(payload))
+    headerView.setUint8(4, index);
+    if (isFirstFragment()) {
+      headerView.setUint16(5, messageBuffer.byteLength, true);
+      headerView.setUint8(7, getChecksumFromArrayBuffer(payload));
     }
-    return messageBuffer
+
+    const payloadView = new DataView(
+      messageBuffer,
+      HEADER_SIZE / 8,
+      message.byteLength
+    );
+
+    const payloadArray = new Uint8Array(message)
+    for(let i = 0; i < payloadArray.length; i++) {
+      payloadView.setUint8(i, payloadArray[i])
+    }
+    return messageBuffer;
   });
-  frameCount ++;
-  return output
+  frameCount++;
+  return output;
 };
