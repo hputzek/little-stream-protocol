@@ -20,6 +20,8 @@ The available options can be checked directly in `index.js`
 
 # Test
 
+Checkout the repo, then
+
 `npm run test`
 
 This runs the example in the `examples` folder.
