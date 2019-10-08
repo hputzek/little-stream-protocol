@@ -1,3 +1,3 @@
-import {sendFrame} from "../index.js";
+import {getFrameData} from "../index.js";
 
-sendFrame();
+getFrameData()

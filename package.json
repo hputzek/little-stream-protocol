@@ -27,5 +27,11 @@
   "bugs": {
     "url": "https://github.com/hputzek/little-stream-protocol/issues"
   },
-  "homepage": "https://github.com/hputzek/little-stream-protocol#readme"
+  "homepage": "https://github.com/hputzek/little-stream-protocol#readme",
+  "devDependencies": {
+    "eslint": "^6.5.1",
+    "eslint-config-prettier": "^6.4.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "prettier": "^1.18.2"
+  }
 }
