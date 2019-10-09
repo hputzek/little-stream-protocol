@@ -11,8 +11,6 @@
         /* ----------------- */
 
         @import url(https://fonts.googleapis.com/css?family=Lato:400,700,900,300);
-        @import url(http://weloveiconfonts.com/api/?family=fontawesome);
-
         * { box-sizing: border-box; }
 
         body {
@@ -232,7 +230,7 @@
 </div>
 
 <script type="module">
-    import { getSFrame, getPixelsFrame } from '../lib/'
+    import { getSFrame, getPixelsFrame } from './js/lib/index.js'
     window.pixels = {}
     window.pixels.getSFrame = getSFrame
     window.pixels.getPixelsFrame = getPixelsFrame

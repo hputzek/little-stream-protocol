@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "node  --experimental-modules --es-module-specifier-resolution=node examples/index.js",
-    "lintfix": "eslint --fix --format stylish --ext .js --ignore-path .gitignore ."
+    "lintfix": "eslint --fix --format stylish --ext .js --ignore-path .gitignore .",
+    "build": "cp -r lib examples/js"
   },
   "repository": {
     "type": "git",
