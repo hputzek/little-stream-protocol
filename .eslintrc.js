@@ -4,8 +4,9 @@ module.exports = {
     browser: true,
     node: true
   },
-  parserOptions: {
-
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": "2018"
   },
   extends: ["plugin:prettier/recommended"],
 

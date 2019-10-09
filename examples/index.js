@@ -1,13 +1,16 @@
-import { getFrameData } from "../index.js";
+import { getSFrame, getPixelsFrame } from '../lib/index.js'
 
 // generate a test payload
-const testData = Array.from({ length: 150000 }, () =>
-  Math.floor(Math.random() * 255)
-);
-const testPayload = new Uint8Array(testData).buffer;
+const getRandomPixelData = (pixelAmount, type) => {
+  const bytesPerPixel = type === 'rgbw' ? 4 : 3
+  return Array.from({ length: pixelAmount * bytesPerPixel }, () =>
+    Math.floor(Math.random() * 255)
+  )
+}
 
+// get frame payload for a given payload
+const frames = getSFrame({
+  payload: getPixelsFrame({ payload: getRandomPixelData(5000, 'rgb') })
+})
 
-// get frame data for a given payload
-const frames = getFrameData({ payload: testPayload });
-
-console.log(frames);
+console.log(frames)

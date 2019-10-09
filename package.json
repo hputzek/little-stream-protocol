@@ -2,13 +2,14 @@
   "name": "little-stream-protocol",
   "version": "1.0.0",
   "description": "A javascript implementation to send data via little stream",
-  "main": "index.js",
+  "main": "lib/index.js",
   "type": "module",
   "directories": {
     "example": "examples"
   },
   "scripts": {
-    "test": "node  --experimental-modules examples/index.js"
+    "test": "node  --experimental-modules --es-module-specifier-resolution=node examples/index.js",
+    "lintfix": "eslint --fix --format stylish --ext .js --ignore-path .gitignore ."
   },
   "repository": {
     "type": "git",
