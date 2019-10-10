@@ -10,8 +10,8 @@
   "scripts": {
     "dev": "npm-run-all --parallel startClient startServer",
     "startClient": "browser-sync start -c bs-config.js",
-    "startServer": "node --experimental-modules --es-module-specifier-resolution=node examples/js/node/websocketToUdpRelay.js",
-    "test": "node  --experimental-modules --es-module-specifier-resolution=node examples/index.js",
+    "startServer": "node --experimental-modules examples/js/node/websocketToUdpRelay.js",
+    "test": "node  --experimental-modules examples/index.js",
     "lintfix": "eslint --fix --format stylish --ext .js --ignore-path .gitignore .",
     "build": "cp -r lib examples/js"
   },
