@@ -30,7 +30,6 @@ const server = http.createServer((req, res) => {
       req.on('end', () => {
         const newOptions = JSON.parse(body)
         const result = setOptions(newOptions)
-        console.log(options)
         res.end(JSON.stringify({result: result, options: options}));
       });
 

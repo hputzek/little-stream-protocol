@@ -1,6 +1,6 @@
 <template>
   <form>
-      <div style="display: flex;" v-if="isLocal">
+      <div style="display: flex;" v-if="!isLocal">
           <div style="font-size: 80px;">🤷‍♀️</div>
           <div>
               <h2>You can test without udp output only</h2>
