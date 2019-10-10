@@ -1,4 +1,4 @@
-import { getSFrame, getPixelsFrame } from '../lib/index.js'
+import { s, pixels } from '../lib/index.js'
 
 // generate a test payload
 const getRandomPixelData = (pixelAmount, type) => {
@@ -9,8 +9,8 @@ const getRandomPixelData = (pixelAmount, type) => {
 }
 
 // get frame payload for a given payload
-const frames = getSFrame({
-  payload: getPixelsFrame({ payload: getRandomPixelData(5000, 'rgb') })
+const frames = s.getFrame({
+  payload: pixels.getFrame({ payload: getRandomPixelData(5000, 'rgb') })
 })
 
 console.log(frames)

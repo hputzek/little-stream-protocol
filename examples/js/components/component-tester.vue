@@ -1,5 +1,14 @@
 <template>
     <form>
+        <p>Output settings:</p>
+        <div v-if="isLocal">
+            <label for="udp-target-ip">Target IP
+                <input type="text" id="udp-target-ip" v-model="options.udpTargetIp"/>
+            </label>
+            <label for="udp-target-port"> Target Port
+                <input type="text" id="udp-target-port" v-model="options.udpTargetPort"/>
+            </label>
+        </div>
         <p>Number of random pixels to generate</p>
         <p class="range-wrapper">
             <input type="range" id="pixel-amount-range" min="0" max="2000" v-model="pixelAmount"/>
@@ -34,20 +43,37 @@
             return {
                 pixelAmount: 10,
                 ledType: 'rgb',
-                outputType: 'hex'
+                outputType: 'hex',
+                options: {
+                    //The ip & port for sending incoming websocket packets via udp
+                    udpTargetIp:'',
+                    udpTargetPort: ''
+                }
             }
         },
         computed: {
           output: function() {
-              const frames = window.pixels.getSFrame({
-                  payload: window.pixels.getPixelsFrame({ payload: this.getRandomPixelData(this.pixelAmount, this.ledType) })
+              const frames = window.s.getFrame({
+                  payload: window.pixels.getFrame({ payload: this.getRandomPixelData(this.pixelAmount, this.ledType) })
               })
               const output = frames.reduce((acc, frame) => {
                   const frameContent = new Uint8Array(frame)
                   return [...acc, ...frameContent]
               }, [])
               return this.outputType === 'hex' ? this.toHexString(output) : output
-          }
+          },
+            isLocal: function () {
+                return location.hostname === "localhost" || location.hostname === "127.0.0.1"
+            }
+        },
+        mounted() {
+          this.setOptions({})
+        },
+        watch: {
+            options: {
+                handler: function (newOptions) {this.setOptions(newOptions)},
+                deep: true
+            },
         },
         methods: {
             // generate a test payload
@@ -59,7 +85,23 @@
             },
             toHexString(bytes) {
                 return bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0') + ' ', '');
-            }
+            },
+            setOptions(options) {
+                fetch('http://localhost:3002', {
+                    headers: { "Content-Type": "application/json; charset=utf-8" },
+                    method: 'POST',
+                    body: JSON.stringify(options)
+                }).then(function(response) {
+                    return response.json()
+                }).then(function(data) {
+                    if(data.result !== true) {
+                        alert("Error setting new options.")
+                    }
+                    else {
+                        this.options = Object.assign({},data.options)
+                    }
+                });
+            },
         }
     }
 </script>
@@ -70,6 +112,9 @@
         max-width: 640px;
         margin: 0 auto;
         padding: 20px;
+    }
+    input {
+        color: #000;
     }
     .range-wrapper {
         display: flex;

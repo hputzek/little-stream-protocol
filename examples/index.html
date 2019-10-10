@@ -230,10 +230,11 @@
 </div>
 
 <script type="module">
-    import { getSFrame, getPixelsFrame } from './js/lib/index.js'
+    import { pixels, s } from './js/lib/index.js'
     window.pixels = {}
-    window.pixels.getSFrame = getSFrame
-    window.pixels.getPixelsFrame = getPixelsFrame
+    window.s = {}
+    window.s.getFrame = s.getFrame
+    window.pixels.getFrame = pixels.getFrame
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.3/vue.min.js"></script>
 <script src="https://unpkg.com/http-vue-loader"></script>
