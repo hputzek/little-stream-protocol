@@ -30,6 +30,7 @@ const server = http.createServer((req, res) => {
       req.on('end', () => {
         const newOptions = JSON.parse(body)
         const result = setOptions(newOptions)
+        console.log(options)
         res.end(JSON.stringify({result: result, options: options}));
       });
 
@@ -52,7 +53,6 @@ server.listen(3002);
 const wss = new WebSocket.Server({ port: 8080 })
 
 const setOptions = (newOptions = {}) => {
-  console.log(newOptions)
   if(typeof newOptions !== "object") {
     return false
   }
@@ -82,7 +82,6 @@ wss.on('connection', function(ws) {
 
   //When a message is received from ws client send it to udp server.
   ws.on('message', function(message) {
-    console.log(message)
     const msgBuff = new Buffer(message)
     udpServer.send(msgBuff, 0, msgBuff.length, options.udpTargetPort, options.udpTargetIp)
   })
