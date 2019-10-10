@@ -30,6 +30,6 @@ You can find information about the protocols at their corresponding repos, too:
 # Test
 
 Checkout the repo, then
-
+* `npm install`
 * `npm run test` to run a basic test file from `examples` folder. (outputs to console)
 * `npm run dev` to start testing tool locally using browser-sync
