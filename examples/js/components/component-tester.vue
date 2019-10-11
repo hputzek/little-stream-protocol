@@ -1,5 +1,5 @@
 <template>
-  <form>
+  <form ref="input-form">
       <div style="display: flex;" v-if="!isLocal">
           <div style="font-size: 80px;">🤷‍♀️</div>
           <div>
@@ -8,30 +8,34 @@
               <p>Please refer to the <a href="https://github.com/hputzek/little-stream-protocol">GitHub Repo</a> to get info on how to set this up.</p>
           </div>
       </div>
-    <p>Output settings:</p>
-      <p>❌brotli compressed output not implemented yet.</p>
-    <div v-if="isLocal">
+    <fieldset>
+      <legend>Info:</legend>
+        <p>❌brotli compressed output not implemented yet.</p>
+    </fieldset>
+    <fieldset v-if="isLocal">
+      <legend>Output settings</legend>
       <label for="udp-target-ip"
         >Target IP
         <input
           type="text"
           id="udp-target-ip"
           v-model="serverOptions.udpTargetIp"
-          @change="setOptions"
+          @change="saveOptionsToServer"
         />
       </label>
       <label for="udp-target-port">
         Target Port
         <input
-          type="text"
+          type="number"
+          min="1"
           id="udp-target-port"
           v-model="serverOptions.udpTargetPort"
-          @change="setOptions"
+          @change="saveOptionsToServer"
         />
       </label>
-    </div>
-    <p>Protocol to use</p>
-    <p>
+    </fieldset>
+    <fieldset>
+      <legend>Protocol to use</legend>
       <label for="protocol-pixels"
         >Pixels
         <input
@@ -39,8 +43,8 @@
           id="protocol-pixels"
           name="protocol"
           value="pixels"
-          v-model="protocol"
-          @change="output"
+          v-model="leds.protocol"
+          @change="saveOptionsToServer"
         />
       </label>
       <label for="protocol-pixels+s"
@@ -50,31 +54,34 @@
           id="protocol-pixels+s"
           name="protocol"
           value="pixels+s"
-          v-model="protocol"
-          @change="output"
+          v-model="leds.protocol"
+          @change="saveOptionsToServer"
         />
       </label>
-    </p>
-    <p>Number of random pixels to generate</p>
-    <p class="slider-wrapper">
+      <p v-if="!binOutput">current packets per Frame: {{ packetCountPerFrame }} </p>
+    </fieldset>
+    <fieldset class="slider-wrapper">
+      <legend>Output length</legend>
+      <p>Number pixels to generate</p>
       <input
         type="range"
         id="pixel-amount-range"
         min="1"
         max="2000"
-        v-model="pixelAmount"
-        @change="output"
+        v-model="leds.pixelAmount"
+        @change="saveOptionsToServer"
       />
       <input
-        type="text"
+        type="number"
         class="pixel-amount"
         id="pixel-amount"
-        v-model="pixelAmount"
-        @change="output"
+        v-model="leds.pixelAmount"
+        @change="saveOptionsToServer"
       />
-    </p>
-    <p>LED Type? (3 or 4 brightness values per LED)</p>
-    <p>
+    </fieldset>
+    <fieldset>
+      <legend>LED settings</legend>
+      <p>3 or 4 brightness values per LED?</p>
       <label for="type-rgb"
         >RGB
         <input
@@ -82,29 +89,41 @@
           id="type-rgb"
           name="led-type"
           value="rgb"
-          v-model="ledType"
-          @change="output"
+          v-model="leds.ledType"
+          @change="saveOptionsToServer"
       /></label>
+      <label for="type-rgbw">RGBW
       <input
         type="radio"
         id="type-rgbw"
         name="led-type"
         value="rgbw"
-        v-model="ledType"
-        @change="output"
+        v-model="leds.ledType"
+        @change="saveOptionsToServer"
       />
-      <label for="type-rgbw">RGBW</label>
-    </p>
-    <p>Wanna see output as integers or as hex?</p>
-    <p>
+      </label>
+      <label for="dimmer">
+        Master brightness
+        <input
+                type="range"
+                id="dimmer"
+                min="1"
+                max="100"
+                v-model="leds.masterBrightness"
+        />
+      </label>
+    </fieldset>
+    <fieldset>
+      <legend>Textual preview</legend>
+      <p>Wanna see output as integers or as hex?</p>
       <label for="output-hex"
         >HEX<input
           type="radio"
           id="output-hex"
           name="output-type"
           value="hex"
-          v-model="outputType"
-          @change="output"
+          v-model="leds.outputType"
+          @change="saveOptionsToServer"
       /></label>
       <label for="output-int"
         >INT<input
@@ -112,29 +131,47 @@
           id="output-int"
           name="output-type"
           value="int"
-          v-model="outputType"
-          @change="output"
+          v-model="leds.outputType"
+          @change="saveOptionsToServer"
       /></label>
-    </p>
-      <p>Auto send</p>
-      <p class="slider-wrapper">
+    </fieldset>
+      <fieldset class="slider-wrapper">
+        <legend>Auto send</legend>
+
           <input
                   type="range"
-                  id="timer"
-                  min="20"
-                  max="2000"
+                  id="timer-fps"
+                  min="1"
+                  max="1000"
                   v-model="timer.duration"
                   @change="startTimer"
           />
+
+        <label for="duration-interval">
+          Interval
           <input
-                  type="text"
+                  type="number"
                   class="pixel-amount"
-                  id="duration-text"
+                  id="duration-interval"
                   v-model="timer.duration"
-                  @change="output"
+                  @change="saveOptionsToServer"
           />
-          <button type="button" @click="toggleTimer">Start/Stop</button>
-      </p>
+        </label>
+        <label for="duration-fps">
+          FPS
+          <input
+                  disabled
+                  type="number"
+                  class="pixel-amount"
+                  id="duration-fps"
+                  v-model="timer.duration"
+                  @change="saveOptionsToServer"
+          />
+        </label>
+
+          <button type="button" :class="this.timerIntervalId ? 'active' : ''" @click="toggleTimer">{{timerButtonText}}</button>
+          <button type="button" v-if="binOutput" @click="saveFrame">💾 Frame</button>
+      </fieldset>
     <textarea v-model="guiOutput"></textarea>
   </form>
 </template>
@@ -143,19 +180,30 @@ module.exports = {
   data() {
     return {
       webSocketConn: new WebSocket("ws://localhost:8080"),
-      pixelAmount: 10,
-      ledType: "rgb",
-      outputType: "hex",
-      protocol: "pixels",
-      guiOutput: "",
+      packetCountPerFrame: 0,
+      timerIntervalId: null,
+      singleFrame: null,
+      binOutput: null,
+      guiOutput: null,
+      leds: {
+        pixelAmount: 10,
+        ledType: "rgb",
+        outputType: "hex",
+        protocol: "pixels",
+        masterBrightness: 15
+      },
       timer: {
         duration: 1000,
-        intervalId: null
       },
       serverOptions: {
         //The ip & port for sending incoming websocket packets via udp
         udpTargetIp: "localhost",
         udpTargetPort: "1234"
+      },
+      stats: {
+        packetCountPerFrame: 0,
+        payloadBeforeCompression: 0,
+        payloadAfterCompression: 0
       }
     };
   },
@@ -164,48 +212,64 @@ module.exports = {
       return (
         location.hostname === "localhost" || location.hostname === "127.0.0.1"
       );
+    },
+    timerButtonText: function () {
+      return this.timerIntervalId === null ? "Start" : "Stop"
     }
   },
   mounted() {
-    this.setOptions({});
+    // load state from localstorage
+    const state = window.testhelpers.loadState('input-form')
+    // set initial options
+    this.setOptions();
+    // output one frame
     this.output()
-    this.webSocketConn.onmessage = function(evt) {
-      console.log("received from server: " + evt.data);
+    Object.keys(state).map(key => this[key] = Object.assign(this[key], state[key]))
+    // set handler for receiving messages
+    this.webSocketConn.onmessage = async (evt) => {
+      const buffer = await evt.data.arrayBuffer()
+      const binOutput = new Uint8Array(buffer)
+      this.binOutput = binOutput
+      this.guiOutput = (this.leds.outputType === "hex") ? this.toHexString(binOutput) : binOutput;
+
     };
+    // set handler to save settings on change
+    this.$refs["input-form"].addEventListener('change', ()=>{
+      const data = Object.assign({},this.$data)
+      const {leds, serverOptions, timer, stats} = data
+      window.testhelpers.saveState('input-form', {leds, serverOptions, timer, stats})
+    })
   },
   methods: {
+    saveOptionsToServer() {
+      this.output()
+      this.setOptions()
+    },
     output() {
-      const pixelsData = window.pixels.getFrame({
-        payload: this.getRandomPixelData(this.pixelAmount, this.ledType)
-      });
-      const sData = window.s.getFrame({
-        payload: pixelsData
-      });
-      const frames = this.protocol === "pixels" ? [pixelsData] : sData;
-      const guiOutput = frames.reduce((acc, frame) => {
-        const frameContent = new Uint8Array(frame);
-        return [...acc, ...frameContent];
-      }, []);
+      const rawPayload = this.getRandomPixelData(this.leds.pixelAmount, this.leds.ledType)
+      // add dimmer...
+      const payload = rawPayload.map(channel => {
+        return Math.ceil(channel * (this.leds.masterBrightness / 100))
+      })
+
       if (this.webSocketConn.readyState === 1) {
-        frames.map(frame => {
-          this.webSocketConn.send(frame);
-        });
+          this.webSocketConn.send(new Uint8Array(payload));
       }
-      this.guiOutput =
-        this.outputType === "hex" ? this.toHexString(guiOutput) : guiOutput;
     },
     toggleTimer() {
-      if (this.timer.intervalId === null) {
+      if (this.timerIntervalId === null) {
+        this.saveOptionsToServer()
+        this.output()
         this.startTimer();
       } else {
-        clearInterval(this.timer.intervalId);
-        this.timer.intervalId = null
+        clearInterval(this.timerIntervalId);
+        this.timerIntervalId = null
       }
     },
     startTimer() {
-      clearInterval(this.timer.intervalId);
+      clearInterval(this.timerIntervalId);
       // Store the id of the interval so we can clear it later
-      this.timer.intervalId = setInterval(() => {
+      this.timerIntervalId = setInterval(() => {
         this.output();
       }, this.timer.duration);
     },
@@ -223,10 +287,10 @@ module.exports = {
       );
     },
     setOptions() {
-      fetch("http://localhost:3002", {
+      fetch("http://localhost:3002?action=setOptions", {
         headers: { "Content-Type": "application/json; charset=utf-8" },
         method: "POST",
-        body: JSON.stringify(this.serverOptions)
+        body: JSON.stringify({serverOptions: this.serverOptions, leds: this.leds})
       })
         .then(function(response) {
           return response.json();
@@ -236,34 +300,85 @@ module.exports = {
             alert("Error saving new options to udp relay.");
           }
         });
+    },
+    saveFrame() {
+        window.testhelpers.createAndDownloadBlobFile(this.binOutput, 'pixel-out')
     }
   }
 };
 </script>
-<style scoped>
+<style>
 form {
-  color: #fff;
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 20px;
+ display: flex;
+  flex-wrap: wrap;
+}
+
+fieldset {
+  margin: 10px;
+  padding: 10px;
+  flex-grow: 1;
+  width: 200px;
+  border: 1px solid #666;
+  border-radius: 1px;
+  color: tomato;
+}
+
+label {
+  color: whitesmoke;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+}
+
+label input[type=text] {
+  width: 100%;
+}
+
+input[type=number] {
+  width: 40%;
 }
 
 input {
-  color: #000;
+  background-color: #555;
+  font-size: 0.8em;
+  color: tomato;
+  border: none;
+  margin: 5px 0 10px 0;
 }
 
-.slider-wrapper {
-  display: flex;
+input:disabled {
+  background: none;
+  border: 1px dotted whitesmoke;
+  color: #fff;
 }
 
-.slider-wrapper > * {
-  flex-grow: 1;
-  margin-right: 20px;
+input[type="radio"], range, button {
+  cursor: pointer;
 }
 
-.pixel-amount {
-  width: 6em;
-  flex-grow: 0;
+input[type="text"], input[type="number"] {
+  padding: 10px;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+button {
+  line-height: 1.5;
+  border: none;
+  padding: 10px 20px;
+  background-color: gray;
+  color: #fff;
+  font-size: 1em;
+  min-width: 120px;
+  max-width: 100%;
+}
+
+button.primary, button.active {
+  background-color: tomato;
+  color: whitesmoke;
 }
 
 textarea {

@@ -1,5 +1,5 @@
 <template>
-    <h1>Testing helper for s+pixels protocol</h1>
+    <h1>Testing tool for s+pixels protocol</h1>
 </template>
 
 <script>

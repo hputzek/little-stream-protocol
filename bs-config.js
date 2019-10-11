@@ -12,9 +12,7 @@
  |
  */
 module.exports = {
-  ui: {
-    port: 3001
-  },
+  ui: false,
   files: false,
   watchEvents: ['change'],
   watch: true,

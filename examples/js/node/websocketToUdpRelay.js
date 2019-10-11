@@ -1,5 +1,8 @@
+import { s, pixels, helpers } from '../../../lib/index.js'
+
 import { Buffer } from 'buffer'
 import * as dgram from 'dgram'
+
 // Implement the old require function
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
@@ -7,12 +10,70 @@ const require = createRequire(import.meta.url)
 // Now you can require whatever
 const WebSocket = require('ws')
 const http = require('http');
+const url = require('url');
 const { parse } = require('querystring');
+const compress = require('brotli/compress')
 
 let options = {
-  //The ip & port for sending incoming websocket packets via udp
-  udpTargetIp:'localhost',
-  udpTargetPort: 1234
+  serverOptions: {
+    //The ip & port for sending incoming websocket packets via udp
+    udpTargetIp: "localhost",
+    udpTargetPort: "1234"
+  },
+  leds: {
+    pixelAmount: 10,
+    ledType: "rgb",
+    outputType: "hex",
+    protocol: "pixels",
+  },
+  compression: {
+    enabled: false,
+    mode: 0,
+    quality: 11,
+    lgwin: 22
+  },
+  stats: {
+    packetSizes: [],
+    payloadBeforeCompression: 0,
+    payloadAfterCompression: 0
+  }
+}
+let lastSentFrame = ''
+
+const getFrame = (pixelData) => {
+    const payload = options.compression.enabled ? compress(pixelData, {
+      mode: 0,
+      quality: 11, // 0 - 11
+      lgwin: 0   // 22 default
+    })  : pixelData
+    const pixelsData = pixels.getFrame({
+      payload: payload, type: options.leds.ledType
+    });
+    const sData = s.getFrame({
+      payload: pixelsData
+    });
+    const packets = options.leds.protocol === "pixels" ? [pixelsData] : sData;
+    options.stats.packetSizes = packets.reduce((acc,frame) => {
+      acc =  [...acc, frame.byteLength]
+      return acc
+    },[])
+    options.stats.payloadBeforeCompression = pixelData.byteLength
+    options.stats.payloadAfterCompression = options.stats.packetSizes.reduce((acc, size) => acc + size)
+    return packets
+}
+
+const handleSetOptions = (payload) => {
+    const result = setOptions(payload)
+    return {result: result, options: options}
+}
+
+const handleGetStats = (payload) => {
+    return {result: true, stats: options.stats}
+}
+
+const serverActions = {
+    setOptions: handleSetOptions,
+    getStats: handleGetStats
 }
 
 
@@ -23,14 +84,15 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
   res.setHeader('Access-Control-Allow-Headers', '*');
   if (req.method === 'POST') {
-      let body = '';
+      let body = ''
+      const action = url.parse(req.url,true).query.action
       req.on('data', chunk => {
         body += chunk.toString(); // convert Buffer to string
       });
       req.on('end', () => {
-        const newOptions = JSON.parse(body)
-        const result = setOptions(newOptions)
-        res.end(JSON.stringify({result: result, options: options}));
+        const payload = JSON.parse(body)
+        const actionResult = serverActions[action] ? serverActions[action](payload) : {result: false}
+        res.end(JSON.stringify(actionResult))
       });
 
   }
@@ -82,7 +144,12 @@ wss.on('connection', function(ws) {
   //When a message is received from ws client send it to udp server.
   ws.on('message', function(message) {
     const msgBuff = new Buffer(message)
-    udpServer.send(msgBuff, 0, msgBuff.length, options.udpTargetPort, options.udpTargetIp)
+    const packets = getFrame(new Uint8Array(msgBuff))
+    lastSentFrame = packets
+    packets.map(frame => {
+      ws.send(frame)
+      udpServer.send(new Uint8Array(frame), 0, frame.byteLength, options.serverOptions.udpTargetPort, options.serverOptions.udpTargetIp)
+    });
   })
 })
 
