@@ -57,6 +57,7 @@
           @change="output"
         />
       </label>
+      <p v-if="!binOutput">current packets per Frame: {{ packetCountPerFrame }} </p>
     </fieldset>
     <fieldset class="slider-wrapper">
       <legend>Output length</legend>
@@ -157,6 +158,7 @@
         </label>
 
           <button type="button" :class="this.timerIntervalId ? 'active' : ''" @click="toggleTimer">{{timerButtonText}}</button>
+          <button type="button" v-if="binOutput" @click="saveFrame">💾 Frame</button>
       </fieldset>
     <textarea v-model="guiOutput"></textarea>
   </form>
@@ -166,7 +168,10 @@ module.exports = {
   data() {
     return {
       webSocketConn: new WebSocket("ws://localhost:8080"),
+      packetCountPerFrame: 0,
       timerIntervalId: null,
+      singleFrame: null,
+      binOutput: null,
       guiOutput: "",
       pixels: {
         pixelAmount: 10,
@@ -200,7 +205,8 @@ module.exports = {
     // output one frame
     this.output()
     // load state from localstorage
-    //this.data = () => window.testhelpers.loadState('input-form')
+    const state = window.testhelpers.loadState('input-form')
+    Object.keys(state).map(key => this[key] = Object.assign(this[key], state[key]))
     // set handler for receiving messages
     this.webSocketConn.onmessage = function(evt) {
       console.log("received from server: " + evt.data);
@@ -209,9 +215,7 @@ module.exports = {
     this.$refs["input-form"].addEventListener('change', ()=>{
       const data = Object.assign({},this.$data)
       const {pixels, serverOptions, timer} = data
-      console.log({pixels, serverOptions, timer})
-      //window.testhelpers.saveState('input-form', this.data)
-      //console.log(window.testhelpers.loadState('input-form'))
+      window.testhelpers.saveState('input-form', {pixels, serverOptions, timer})
     })
   },
   methods: {
@@ -223,6 +227,12 @@ module.exports = {
         payload: pixelsData
       });
       const frames = this.pixels.protocol === "pixels" ? [pixelsData] : sData;
+
+      this.packetCountPerFrame = frames.length
+
+      // set output for saving single frame only if just one frame is generated
+      this.binOutput = frames.length === 1 ? frames[0] : null
+      // set output for gui (textual output)
       const guiOutput = frames.reduce((acc, frame) => {
         const frameContent = new Uint8Array(frame);
         return [...acc, ...frameContent];
@@ -277,6 +287,9 @@ module.exports = {
             alert("Error saving new options to udp relay.");
           }
         });
+    },
+    saveFrame() {
+
     }
   }
 };
@@ -331,6 +344,7 @@ input[type="range"] {
 }
 
 button {
+  line-height: 1.5;
   border: none;
   padding: 10px 20px;
   background-color: gray;
