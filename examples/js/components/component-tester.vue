@@ -42,7 +42,7 @@
           id="protocol-pixels"
           name="protocol"
           value="pixels"
-          v-model="pixels.protocol"
+          v-model="leds.protocol"
           @change="output"
         />
       </label>
@@ -53,7 +53,7 @@
           id="protocol-pixels+s"
           name="protocol"
           value="pixels+s"
-          v-model="pixels.protocol"
+          v-model="leds.protocol"
           @change="output"
         />
       </label>
@@ -67,14 +67,14 @@
         id="pixel-amount-range"
         min="1"
         max="2000"
-        v-model="pixels.pixelAmount"
+        v-model="leds.pixelAmount"
         @change="output"
       />
       <input
         type="text"
         class="pixel-amount"
         id="pixel-amount"
-        v-model="pixels.pixelAmount"
+        v-model="leds.pixelAmount"
         @change="output"
       />
     </fieldset>
@@ -88,7 +88,7 @@
           id="type-rgb"
           name="led-type"
           value="rgb"
-          v-model="pixels.ledType"
+          v-model="leds.ledType"
           @change="output"
       /></label>
       <label for="type-rgbw">RGBW
@@ -97,7 +97,7 @@
         id="type-rgbw"
         name="led-type"
         value="rgbw"
-        v-model="pixels.ledType"
+        v-model="leds.ledType"
         @change="output"
       />
       </label>
@@ -111,7 +111,7 @@
           id="output-hex"
           name="output-type"
           value="hex"
-          v-model="pixels.outputType"
+          v-model="leds.outputType"
           @change="output"
       /></label>
       <label for="output-int"
@@ -120,7 +120,7 @@
           id="output-int"
           name="output-type"
           value="int"
-          v-model="pixels.outputType"
+          v-model="leds.outputType"
           @change="output"
       /></label>
     </fieldset>
@@ -173,7 +173,7 @@ module.exports = {
       singleFrame: null,
       binOutput: null,
       guiOutput: "",
-      pixels: {
+      leds: {
         pixelAmount: 10,
         ledType: "rgb",
         outputType: "hex",
@@ -186,6 +186,11 @@ module.exports = {
         //The ip & port for sending incoming websocket packets via udp
         udpTargetIp: "localhost",
         udpTargetPort: "1234"
+      },
+      stats: {
+        packetCountPerFrame: 0,
+        payloadBeforeCompression: 0,
+        payloadAfterCompression: 0
       }
     };
   },
@@ -208,42 +213,23 @@ module.exports = {
     const state = window.testhelpers.loadState('input-form')
     Object.keys(state).map(key => this[key] = Object.assign(this[key], state[key]))
     // set handler for receiving messages
-    this.webSocketConn.onmessage = function(evt) {
-      console.log("received from server: " + evt.data);
+    this.webSocketConn.onmessage = async function(evt) {
+      const buffer = await evt.data.arrayBuffer()
+      console.log(new Uint8Array(buffer))
     };
     // set handler to save settings on change
     this.$refs["input-form"].addEventListener('change', ()=>{
       const data = Object.assign({},this.$data)
-      const {pixels, serverOptions, timer} = data
-      window.testhelpers.saveState('input-form', {pixels, serverOptions, timer})
+      const {leds, serverOptions, timer} = data
+      window.testhelpers.saveState('input-form', {leds, serverOptions, timer})
     })
   },
   methods: {
     output() {
-      const pixelsData = window.pixels.getFrame({
-        payload: this.getRandomPixelData(this.pixels.pixelAmount, this.pixels.ledType)
-      });
-      const sData = window.s.getFrame({
-        payload: pixelsData
-      });
-      const frames = this.pixels.protocol === "pixels" ? [pixelsData] : sData;
-
-      this.packetCountPerFrame = frames.length
-
-      // set output for saving single frame only if just one frame is generated
-      this.binOutput = frames.length === 1 ? frames[0] : null
-      // set output for gui (textual output)
-      const guiOutput = frames.reduce((acc, frame) => {
-        const frameContent = new Uint8Array(frame);
-        return [...acc, ...frameContent];
-      }, []);
+      const payload = this.getRandomPixelData(this.leds.pixelAmount, this.leds.ledType)
       if (this.webSocketConn.readyState === 1) {
-        frames.map(frame => {
-          this.webSocketConn.send(frame);
-        });
+          this.webSocketConn.send(payload);
       }
-      this.guiOutput =
-        this.pixels.outputType === "hex" ? this.toHexString(guiOutput) : guiOutput;
     },
     toggleTimer() {
       if (this.timerIntervalId === null) {
@@ -289,7 +275,7 @@ module.exports = {
         });
     },
     saveFrame() {
-
+        window.testhelpers.createAndDownloadBlobFile(this.binOutput, 'pixel-out')
     }
   }
 };
