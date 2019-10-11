@@ -103,13 +103,13 @@
       />
       </label>
       <label for="dimmer">
+        Master brightness
         <input
                 type="range"
                 id="dimmer"
                 min="1"
                 max="100"
-                v-model="options.leds.masterBrightness"
-                @change="saveOptionsToServer"
+                v-model="leds.masterBrightness"
         />
       </label>
     </fieldset>
@@ -150,7 +150,7 @@
         <label for="duration-interval">
           Interval
           <input
-                  type="text"
+                  type="number"
                   class="pixel-amount"
                   id="duration-interval"
                   v-model="timer.duration"
@@ -161,7 +161,7 @@
           FPS
           <input
                   disabled
-                  type="text"
+                  type="number"
                   class="pixel-amount"
                   id="duration-fps"
                   v-model="timer.duration"
@@ -246,8 +246,12 @@ module.exports = {
       this.setOptions()
     },
     output() {
-      const payload = this.getRandomPixelData(this.leds.pixelAmount, this.leds.ledType)
-      //const payload = rawPayload.map(colorChannel => parseInt(colorChannel * (this.masterBrightness/100))
+      const rawPayload = this.getRandomPixelData(this.leds.pixelAmount, this.leds.ledType)
+      // add dimmer...
+      const payload = rawPayload.map(channel => {
+        return Math.ceil(channel * (this.leds.masterBrightness / 100))
+      })
+
       if (this.webSocketConn.readyState === 1) {
           this.webSocketConn.send(new Uint8Array(payload));
       }
@@ -327,9 +331,12 @@ label {
   width: 100%;
 }
 
-label input {
-  width: 50%;
-  min-width: 200px;
+label input[type=text] {
+  width: 100%;
+}
+
+input[type=number] {
+  width: 40%;
 }
 
 input {
