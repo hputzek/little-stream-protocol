@@ -1,5 +1,5 @@
 <template>
-  <form>
+  <form ref="input-form">
       <div style="display: flex;" v-if="!isLocal">
           <div style="font-size: 80px;">🤷‍♀️</div>
           <div>
@@ -8,9 +8,12 @@
               <p>Please refer to the <a href="https://github.com/hputzek/little-stream-protocol">GitHub Repo</a> to get info on how to set this up.</p>
           </div>
       </div>
-    <p>Output settings:</p>
-      <p>❌brotli compressed output not implemented yet.</p>
-    <div v-if="isLocal">
+    <fieldset>
+      <legend>Info:</legend>
+        <p>❌brotli compressed output not implemented yet.</p>
+    </fieldset>
+    <fieldset v-if="isLocal">
+      <legend>Output settings</legend>
       <label for="udp-target-ip"
         >Target IP
         <input
@@ -29,9 +32,9 @@
           @change="setOptions"
         />
       </label>
-    </div>
-    <p>Protocol to use</p>
-    <p>
+    </fieldset>
+    <fieldset>
+      <legend>Protocol to use</legend>
       <label for="protocol-pixels"
         >Pixels
         <input
@@ -39,7 +42,7 @@
           id="protocol-pixels"
           name="protocol"
           value="pixels"
-          v-model="protocol"
+          v-model="pixels.protocol"
           @change="output"
         />
       </label>
@@ -50,31 +53,33 @@
           id="protocol-pixels+s"
           name="protocol"
           value="pixels+s"
-          v-model="protocol"
+          v-model="pixels.protocol"
           @change="output"
         />
       </label>
-    </p>
-    <p>Number of random pixels to generate</p>
-    <p class="slider-wrapper">
+    </fieldset>
+    <fieldset class="slider-wrapper">
+      <legend>Output length</legend>
+      <p>Number pixels to generate</p>
       <input
         type="range"
         id="pixel-amount-range"
         min="1"
         max="2000"
-        v-model="pixelAmount"
+        v-model="pixels.pixelAmount"
         @change="output"
       />
       <input
         type="text"
         class="pixel-amount"
         id="pixel-amount"
-        v-model="pixelAmount"
+        v-model="pixels.pixelAmount"
         @change="output"
       />
-    </p>
-    <p>LED Type? (3 or 4 brightness values per LED)</p>
-    <p>
+    </fieldset>
+    <fieldset>
+      <legend>LED Type</legend>
+      <p>3 or 4 brightness values per LED?</p>
       <label for="type-rgb"
         >RGB
         <input
@@ -82,28 +87,30 @@
           id="type-rgb"
           name="led-type"
           value="rgb"
-          v-model="ledType"
+          v-model="pixels.ledType"
           @change="output"
       /></label>
+      <label for="type-rgbw">RGBW
       <input
         type="radio"
         id="type-rgbw"
         name="led-type"
         value="rgbw"
-        v-model="ledType"
+        v-model="pixels.ledType"
         @change="output"
       />
-      <label for="type-rgbw">RGBW</label>
-    </p>
-    <p>Wanna see output as integers or as hex?</p>
-    <p>
+      </label>
+    </fieldset>
+    <fieldset>
+      <legend>Textual preview</legend>
+      <p>Wanna see output as integers or as hex?</p>
       <label for="output-hex"
         >HEX<input
           type="radio"
           id="output-hex"
           name="output-type"
           value="hex"
-          v-model="outputType"
+          v-model="pixels.outputType"
           @change="output"
       /></label>
       <label for="output-int"
@@ -112,29 +119,45 @@
           id="output-int"
           name="output-type"
           value="int"
-          v-model="outputType"
+          v-model="pixels.outputType"
           @change="output"
       /></label>
-    </p>
-      <p>Auto send</p>
-      <p class="slider-wrapper">
+    </fieldset>
+      <fieldset class="slider-wrapper">
+        <legend>Auto send</legend>
+
           <input
                   type="range"
-                  id="timer"
-                  min="20"
-                  max="2000"
+                  id="timer-fps"
+                  min="1"
+                  max="100"
                   v-model="timer.duration"
                   @change="startTimer"
           />
+
+        <label for="duration-interval">
+          FPS
           <input
                   type="text"
                   class="pixel-amount"
-                  id="duration-text"
+                  id="duration-interval"
                   v-model="timer.duration"
                   @change="output"
           />
-          <button type="button" @click="toggleTimer">Start/Stop</button>
-      </p>
+        </label>
+        <label for="duration-fps">
+          Interval
+          <input
+                  type="text"
+                  class="pixel-amount"
+                  id="duration-fps"
+                  v-model="timer.duration"
+                  @change="output"
+          />
+        </label>
+
+          <button type="button" :class="this.timerIntervalId ? 'active' : ''" @click="toggleTimer">{{timerButtonText}}</button>
+      </fieldset>
     <textarea v-model="guiOutput"></textarea>
   </form>
 </template>
@@ -143,14 +166,16 @@ module.exports = {
   data() {
     return {
       webSocketConn: new WebSocket("ws://localhost:8080"),
-      pixelAmount: 10,
-      ledType: "rgb",
-      outputType: "hex",
-      protocol: "pixels",
+      timerIntervalId: null,
       guiOutput: "",
+      pixels: {
+        pixelAmount: 10,
+        ledType: "rgb",
+        outputType: "hex",
+        protocol: "pixels",
+      },
       timer: {
         duration: 1000,
-        intervalId: null
       },
       serverOptions: {
         //The ip & port for sending incoming websocket packets via udp
@@ -164,24 +189,40 @@ module.exports = {
       return (
         location.hostname === "localhost" || location.hostname === "127.0.0.1"
       );
+    },
+    timerButtonText: function () {
+      return this.timerIntervalId === null ? "Start" : "Stop"
     }
   },
   mounted() {
+    // set initial options
     this.setOptions({});
+    // output one frame
     this.output()
+    // load state from localstorage
+    //this.data = () => window.testhelpers.loadState('input-form')
+    // set handler for receiving messages
     this.webSocketConn.onmessage = function(evt) {
       console.log("received from server: " + evt.data);
     };
+    // set handler to save settings on change
+    this.$refs["input-form"].addEventListener('change', ()=>{
+      const data = Object.assign({},this.$data)
+      const {pixels, serverOptions, timer} = data
+      console.log({pixels, serverOptions, timer})
+      //window.testhelpers.saveState('input-form', this.data)
+      //console.log(window.testhelpers.loadState('input-form'))
+    })
   },
   methods: {
     output() {
       const pixelsData = window.pixels.getFrame({
-        payload: this.getRandomPixelData(this.pixelAmount, this.ledType)
+        payload: this.getRandomPixelData(this.pixels.pixelAmount, this.pixels.ledType)
       });
       const sData = window.s.getFrame({
         payload: pixelsData
       });
-      const frames = this.protocol === "pixels" ? [pixelsData] : sData;
+      const frames = this.pixels.protocol === "pixels" ? [pixelsData] : sData;
       const guiOutput = frames.reduce((acc, frame) => {
         const frameContent = new Uint8Array(frame);
         return [...acc, ...frameContent];
@@ -192,20 +233,20 @@ module.exports = {
         });
       }
       this.guiOutput =
-        this.outputType === "hex" ? this.toHexString(guiOutput) : guiOutput;
+        this.pixels.outputType === "hex" ? this.toHexString(guiOutput) : guiOutput;
     },
     toggleTimer() {
-      if (this.timer.intervalId === null) {
+      if (this.timerIntervalId === null) {
         this.startTimer();
       } else {
-        clearInterval(this.timer.intervalId);
-        this.timer.intervalId = null
+        clearInterval(this.timerIntervalId);
+        this.timerIntervalId = null
       }
     },
     startTimer() {
-      clearInterval(this.timer.intervalId);
+      clearInterval(this.timerIntervalId);
       // Store the id of the interval so we can clear it later
-      this.timer.intervalId = setInterval(() => {
+      this.timerIntervalId = setInterval(() => {
         this.output();
       }, this.timer.duration);
     },
@@ -240,30 +281,68 @@ module.exports = {
   }
 };
 </script>
-<style scoped>
+<style>
 form {
-  color: #fff;
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 20px;
+ display: flex;
+  flex-wrap: wrap;
+}
+
+fieldset {
+  margin: 10px;
+  padding: 10px;
+  flex-grow: 1;
+  width: 200px;
+  border: 1px solid #666;
+  border-radius: 1px;
+  color: tomato;
+}
+
+label {
+  color: whitesmoke;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+}
+
+label input {
+  width: 50%;
+  min-width: 200px;
 }
 
 input {
-  color: #000;
+  background-color: #555;
+  font-size: 0.8em;
+  color: tomato;
+  border: none;
+  margin: 5px 0 10px 0;
 }
 
-.slider-wrapper {
-  display: flex;
+input[type="radio"], range, button {
+  cursor: pointer;
 }
 
-.slider-wrapper > * {
-  flex-grow: 1;
-  margin-right: 20px;
+input[type="text"] {
+  padding: 10px;
 }
 
-.pixel-amount {
-  width: 6em;
-  flex-grow: 0;
+input[type="range"] {
+  width: 100%;
+}
+
+button {
+  border: none;
+  padding: 10px 20px;
+  background-color: gray;
+  color: #fff;
+  font-size: 1em;
+  min-width: 120px;
+  max-width: 100%;
+}
+
+button.primary, button.active {
+  background-color: tomato;
+  color: whitesmoke;
 }
 
 textarea {
