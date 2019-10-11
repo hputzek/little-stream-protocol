@@ -20,16 +20,17 @@
           type="text"
           id="udp-target-ip"
           v-model="serverOptions.udpTargetIp"
-          @change="setOptions"
+          @change="saveOptionsToServer"
         />
       </label>
       <label for="udp-target-port">
         Target Port
         <input
-          type="text"
+          type="number"
+          min="1"
           id="udp-target-port"
           v-model="serverOptions.udpTargetPort"
-          @change="setOptions"
+          @change="saveOptionsToServer"
         />
       </label>
     </fieldset>
@@ -43,7 +44,7 @@
           name="protocol"
           value="pixels"
           v-model="leds.protocol"
-          @change="output"
+          @change="saveOptionsToServer"
         />
       </label>
       <label for="protocol-pixels+s"
@@ -54,7 +55,7 @@
           name="protocol"
           value="pixels+s"
           v-model="leds.protocol"
-          @change="output"
+          @change="saveOptionsToServer"
         />
       </label>
       <p v-if="!binOutput">current packets per Frame: {{ packetCountPerFrame }} </p>
@@ -68,18 +69,18 @@
         min="1"
         max="2000"
         v-model="leds.pixelAmount"
-        @change="output"
+        @change="saveOptionsToServer"
       />
       <input
-        type="text"
+        type="number"
         class="pixel-amount"
         id="pixel-amount"
         v-model="leds.pixelAmount"
-        @change="output"
+        @change="saveOptionsToServer"
       />
     </fieldset>
     <fieldset>
-      <legend>LED Type</legend>
+      <legend>LED settings</legend>
       <p>3 or 4 brightness values per LED?</p>
       <label for="type-rgb"
         >RGB
@@ -89,7 +90,7 @@
           name="led-type"
           value="rgb"
           v-model="leds.ledType"
-          @change="output"
+          @change="saveOptionsToServer"
       /></label>
       <label for="type-rgbw">RGBW
       <input
@@ -98,8 +99,18 @@
         name="led-type"
         value="rgbw"
         v-model="leds.ledType"
-        @change="output"
+        @change="saveOptionsToServer"
       />
+      </label>
+      <label for="dimmer">
+        <input
+                type="range"
+                id="dimmer"
+                min="1"
+                max="100"
+                v-model="options.leds.masterBrightness"
+                @change="saveOptionsToServer"
+        />
       </label>
     </fieldset>
     <fieldset>
@@ -112,7 +123,7 @@
           name="output-type"
           value="hex"
           v-model="leds.outputType"
-          @change="output"
+          @change="saveOptionsToServer"
       /></label>
       <label for="output-int"
         >INT<input
@@ -121,7 +132,7 @@
           name="output-type"
           value="int"
           v-model="leds.outputType"
-          @change="output"
+          @change="saveOptionsToServer"
       /></label>
     </fieldset>
       <fieldset class="slider-wrapper">
@@ -131,29 +142,30 @@
                   type="range"
                   id="timer-fps"
                   min="1"
-                  max="100"
+                  max="1000"
                   v-model="timer.duration"
                   @change="startTimer"
           />
 
         <label for="duration-interval">
-          FPS
+          Interval
           <input
                   type="text"
                   class="pixel-amount"
                   id="duration-interval"
                   v-model="timer.duration"
-                  @change="output"
+                  @change="saveOptionsToServer"
           />
         </label>
         <label for="duration-fps">
-          Interval
+          FPS
           <input
+                  disabled
                   type="text"
                   class="pixel-amount"
                   id="duration-fps"
                   v-model="timer.duration"
-                  @change="output"
+                  @change="saveOptionsToServer"
           />
         </label>
 
@@ -172,12 +184,13 @@ module.exports = {
       timerIntervalId: null,
       singleFrame: null,
       binOutput: null,
-      guiOutput: "",
+      guiOutput: null,
       leds: {
         pixelAmount: 10,
         ledType: "rgb",
         outputType: "hex",
         protocol: "pixels",
+        masterBrightness: 15
       },
       timer: {
         duration: 1000,
@@ -205,34 +218,44 @@ module.exports = {
     }
   },
   mounted() {
-    // set initial options
-    this.setOptions({});
-    // output one frame
-    this.output()
     // load state from localstorage
     const state = window.testhelpers.loadState('input-form')
+    // set initial options
+    this.setOptions();
+    // output one frame
+    this.output()
     Object.keys(state).map(key => this[key] = Object.assign(this[key], state[key]))
     // set handler for receiving messages
-    this.webSocketConn.onmessage = async function(evt) {
+    this.webSocketConn.onmessage = async (evt) => {
       const buffer = await evt.data.arrayBuffer()
-      console.log(new Uint8Array(buffer))
+      const binOutput = new Uint8Array(buffer)
+      this.binOutput = binOutput
+      this.guiOutput = (this.leds.outputType === "hex") ? this.toHexString(binOutput) : binOutput;
+
     };
     // set handler to save settings on change
     this.$refs["input-form"].addEventListener('change', ()=>{
       const data = Object.assign({},this.$data)
-      const {leds, serverOptions, timer} = data
-      window.testhelpers.saveState('input-form', {leds, serverOptions, timer})
+      const {leds, serverOptions, timer, stats} = data
+      window.testhelpers.saveState('input-form', {leds, serverOptions, timer, stats})
     })
   },
   methods: {
+    saveOptionsToServer() {
+      this.output()
+      this.setOptions()
+    },
     output() {
       const payload = this.getRandomPixelData(this.leds.pixelAmount, this.leds.ledType)
+      //const payload = rawPayload.map(colorChannel => parseInt(colorChannel * (this.masterBrightness/100))
       if (this.webSocketConn.readyState === 1) {
-          this.webSocketConn.send(payload);
+          this.webSocketConn.send(new Uint8Array(payload));
       }
     },
     toggleTimer() {
       if (this.timerIntervalId === null) {
+        this.saveOptionsToServer()
+        this.output()
         this.startTimer();
       } else {
         clearInterval(this.timerIntervalId);
@@ -260,10 +283,10 @@ module.exports = {
       );
     },
     setOptions() {
-      fetch("http://localhost:3002", {
+      fetch("http://localhost:3002?action=setOptions", {
         headers: { "Content-Type": "application/json; charset=utf-8" },
         method: "POST",
-        body: JSON.stringify(this.serverOptions)
+        body: JSON.stringify({serverOptions: this.serverOptions, leds: this.leds})
       })
         .then(function(response) {
           return response.json();
@@ -317,11 +340,17 @@ input {
   margin: 5px 0 10px 0;
 }
 
+input:disabled {
+  background: none;
+  border: 1px dotted whitesmoke;
+  color: #fff;
+}
+
 input[type="radio"], range, button {
   cursor: pointer;
 }
 
-input[type="text"] {
+input[type="text"], input[type="number"] {
   padding: 10px;
 }
 

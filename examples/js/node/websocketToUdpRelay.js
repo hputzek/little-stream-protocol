@@ -10,6 +10,7 @@ const require = createRequire(import.meta.url)
 // Now you can require whatever
 const WebSocket = require('ws')
 const http = require('http');
+const url = require('url');
 const { parse } = require('querystring');
 const compress = require('brotli/compress')
 
@@ -37,6 +38,7 @@ let options = {
     payloadAfterCompression: 0
   }
 }
+let lastSentFrame = ''
 
 const getFrame = (pixelData) => {
     const payload = options.compression.enabled ? compress(pixelData, {
@@ -45,7 +47,7 @@ const getFrame = (pixelData) => {
       lgwin: 0   // 22 default
     })  : pixelData
     const pixelsData = pixels.getFrame({
-      payload: helpers.getRandomPixelData(options.leds.pixelAmount, options.leds.ledType)
+      payload: payload, type: options.leds.ledType
     });
     const sData = s.getFrame({
       payload: pixelsData
@@ -60,6 +62,20 @@ const getFrame = (pixelData) => {
     return packets
 }
 
+const handleSetOptions = (payload) => {
+    const result = setOptions(payload)
+    return {result: result, options: options}
+}
+
+const handleGetStats = (payload) => {
+    return {result: true, stats: options.stats}
+}
+
+const serverActions = {
+    setOptions: handleSetOptions,
+    getStats: handleGetStats
+}
+
 
 const server = http.createServer((req, res) => {
   // Set CORS headers
@@ -68,14 +84,15 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
   res.setHeader('Access-Control-Allow-Headers', '*');
   if (req.method === 'POST') {
-      let body = '';
+      let body = ''
+      const action = url.parse(req.url,true).query.action
       req.on('data', chunk => {
         body += chunk.toString(); // convert Buffer to string
       });
       req.on('end', () => {
-        const newOptions = JSON.parse(body)
-        const result = setOptions(newOptions)
-        res.end(JSON.stringify({result: result, options: options}));
+        const payload = JSON.parse(body)
+        const actionResult = serverActions[action] ? serverActions[action](payload) : {result: false}
+        res.end(JSON.stringify(actionResult))
       });
 
   }
@@ -128,10 +145,10 @@ wss.on('connection', function(ws) {
   ws.on('message', function(message) {
     const msgBuff = new Buffer(message)
     const packets = getFrame(new Uint8Array(msgBuff))
+    lastSentFrame = packets
     packets.map(frame => {
-      console.log(frame)
-      ws.send(new Uint8Array(frame), {binary: true})
-      udpServer.send(new Uint8Array(frame), 0, frame.byteLength, options.udpTargetPort, options.udpTargetIp)
+      ws.send(frame)
+      udpServer.send(new Uint8Array(frame), 0, frame.byteLength, options.serverOptions.udpTargetPort, options.serverOptions.udpTargetIp)
     });
   })
 })
