@@ -32,6 +32,25 @@ let options = {
     quality: 11,
     lgwin: 22
   },
+    protocol: {
+        s: {
+            maxPacketSize: 1470,
+            header: {
+                version: 4,
+                downstreamFlag: true,
+                compressedFlag: false,
+                type: 1
+            },
+            message: {
+                nodeId: 23,
+                session: 25
+            },
+        },
+        pixels: {
+            syncWord: 0,
+            channelNumber: 0
+        },
+    },
   stats: {
     packetSizes: [],
     payloadBeforeCompression: 0,
