@@ -13,6 +13,7 @@ const http = require('http');
 const url = require('url');
 const { parse } = require('querystring');
 const compress = require('brotli/compress')
+const concatArrayBuffers = require('arraybuffer-concat');
 
 let options = {
   serverOptions: {
@@ -47,6 +48,7 @@ let options = {
             },
         },
         pixels: {
+          type: 'rgb',
             syncWord: 0,
             channelNumber: 0
         },
@@ -54,30 +56,23 @@ let options = {
   stats: {
     packetSizes: [],
     payloadBeforeCompression: 0,
-    payloadAfterCompression: 0
+    payloadAfterCompression: 0,
+    frameSize: 0
   }
 }
-let lastSentFrame = ''
 
 const getFrame = (pixelData) => {
-    const payload = options.compression.enabled ? compress(pixelData, {
-      mode: 0,
-      quality: 11, // 0 - 11
-      lgwin: 0   // 22 default
-    })  : pixelData
-    const pixelsData = pixels.getFrame({
-      payload: payload, type: options.leds.ledType
-    });
-    const sData = s.getFrame({
-      payload: pixelsData
-    });
+    const payload = options.protocol.s.header.compressedFlag ? compress(pixelData, options.compression)  : pixelData
+    const pixelsData = pixels.getFrame(Object.assign(options.protocol.pixels, {payload: payload}))
+    const sData = s.getFrame(Object.assign(options.protocol.s, {payload: pixelsData}));
     const packets = options.leds.protocol === "pixels" ? [pixelsData] : sData;
     options.stats.packetSizes = packets.reduce((acc,frame) => {
       acc =  [...acc, frame.byteLength]
       return acc
     },[])
     options.stats.payloadBeforeCompression = pixelData.byteLength
-    options.stats.payloadAfterCompression = options.stats.packetSizes.reduce((acc, size) => acc + size)
+    options.stats.payloadAfterCompression = payload.byteLength
+    options.stats.frameSize = options.stats.packetSizes.reduce((acc, size) => acc + size)
     return packets
 }
 
@@ -164,10 +159,10 @@ wss.on('connection', function(ws) {
   ws.on('message', function(message) {
     const msgBuff = new Buffer(message)
     const packets = getFrame(new Uint8Array(msgBuff))
-    lastSentFrame = packets
-    packets.map(frame => {
-      ws.send(frame)
-      udpServer.send(new Uint8Array(frame), 0, frame.byteLength, options.serverOptions.udpTargetPort, options.serverOptions.udpTargetIp)
+    let fullFrame = packets.reduce(packet => {}, new Uint8Array())
+    ws.send(concatArrayBuffers(...packets))
+    packets.map(packet => {
+      udpServer.send(new Uint8Array(packet), 0, packet.byteLength, options.serverOptions.udpTargetPort, options.serverOptions.udpTargetIp)
     });
   })
 })
