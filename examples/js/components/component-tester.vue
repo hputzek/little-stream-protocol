@@ -258,7 +258,6 @@
                   min="0"
                   max="100"
                   type="number"
-                  class="pixel-amount"
                   id="brightness-input"
                   v-model="leds.masterBrightness"
                   @change="saveOptionsToServer"
@@ -281,7 +280,6 @@
                 class="pixel-amount"
                 id="pixel-amount"
                 v-model="leds.pixelAmount"
-                @change="saveOptionsToServer"
         />
       </div>
 
@@ -400,7 +398,7 @@
         💾 Frame
       </button>
     </fieldset>
-    <component-output style="width: 100%;" :frame="currentFrame"></component-output>
+    <component-output style="width: 100%;" :leds="leds" :frame="currentFrame"></component-output>
     <textarea v-model="guiOutput"></textarea>
   </form>
 </template>
