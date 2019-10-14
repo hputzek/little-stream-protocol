@@ -400,6 +400,7 @@
         💾 Frame
       </button>
     </fieldset>
+    <component-output style="width: 100%;" :frame="currentFrame"></component-output>
     <textarea v-model="guiOutput"></textarea>
   </form>
 </template>
