@@ -12,7 +12,8 @@ export const saveState = (key, state) => {
  * @param key
  */
 export const loadState = key => {
-  return JSON.parse(window.localStorage.getItem(key)) || {}
+  const value = window.localStorage.getItem(key)
+  return value ?  JSON.parse(value) : {}
 }
 
 /**

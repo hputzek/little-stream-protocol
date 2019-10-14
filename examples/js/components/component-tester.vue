@@ -1,32 +1,40 @@
 <template>
   <form ref="input-form">
-      <div style="display: flex;" v-if="!isLocal">
-          <div style="font-size: 80px;">🤷‍♀️</div>
-          <div>
-              <h2>You can test without udp output only</h2>
-              <p>You must use this tool on your local machine to send udp data with it.</p>
-              <p>Please refer to the <a href="https://github.com/hputzek/little-stream-protocol">GitHub Repo</a> to get info on how to set this up.</p>
-          </div>
+    <div style="display: flex; width: 100%;" v-if="!isLocal">
+      <div style="font-size: 80px;">🤷‍♀️</div>
+      <div>
+        <h2>You can test without udp output only</h2>
+        <p>
+          You must use this tool on your local machine to send udp data with it.
+        </p>
+        <p>
+          Please refer to the
+          <a href="https://github.com/hputzek/little-stream-protocol"
+            >GitHub Repo</a
+          >
+          to get info on how to set this up.
+        </p>
       </div>
+    </div>
     <fieldset>
       <legend>Protocol</legend>
       <label for="udp-target-ip"
-      >Target IP
+        >Target IP
         <input
-                type="text"
-                id="udp-target-ip"
-                v-model="serverOptions.udpTargetIp"
-                @change="saveOptionsToServer"
+          type="text"
+          id="udp-target-ip"
+          v-model="serverOptions.udpTargetIp"
+          @change="saveOptionsToServer"
         />
       </label>
       <label for="udp-target-port">
         Target Port
         <input
-                type="number"
-                min="1"
-                id="udp-target-port"
-                v-model="serverOptions.udpTargetPort"
-                @change="saveOptionsToServer"
+          type="number"
+          min="1"
+          id="udp-target-port"
+          v-model="serverOptions.udpTargetPort"
+          @change="saveOptionsToServer"
         />
       </label>
       <label for="protocol-pixels"
@@ -52,122 +60,164 @@
         />
       </label>
       <details>
-        <summary>pixels settings <a class="help-link" href="https://github.com/IoTPanic/pixels" title="pixels github page">❔</a></summary>
+        <summary
+          >pixels settings
+          <a
+            class="help-link"
+            href="https://github.com/IoTPanic/pixels"
+            title="pixels github page"
+            >❔</a
+          ></summary
+        >
         <label for="pixels-sync-word">
           Sync word
           <input
-                  type="number"
-                  min="0"
-                  max="255"
-                  id="pixels-sync-word"
-                  v-model="protocol.pixels.syncWord"
-                  @change="saveOptionsToServer"
+            type="number"
+            min="0"
+            max="255"
+            id="pixels-sync-word"
+            v-model="protocol.pixels.syncWord"
+            @change="saveOptionsToServer"
           />
         </label>
         <label for="pixels-channel-number">
           Channel number
           <input
-                  type="number"
-                  min="0"
-                  max="255"
-                  id="pixels-channel-number"
-                  v-model="protocol.pixels.channelNumber"
-                  @change="saveOptionsToServer"
+            type="number"
+            min="0"
+            max="255"
+            id="pixels-channel-number"
+            v-model="protocol.pixels.channelNumber"
+            @change="saveOptionsToServer"
           />
         </label>
       </details>
       <details>
-        <summary>s settings<a class="help-link" href="https://iotpanic.github.io" title="s github page">❔</a></summary>
-        <label for="protocol-pixels+s-package-size" title="if packet to send is bigger it will be split in fragments">
+        <summary
+          >s settings<a
+            class="help-link"
+            href="https://iotpanic.github.io"
+            title="s github page"
+            >❔</a
+          ></summary
+        >
+        <label
+          for="protocol-pixels+s-package-size"
+          title="if packet to send is bigger it will be split in fragments"
+        >
           Packet size
           <input
-                  type="number"
-                  min="1"
-                  max="5000"
-                  id="protocol-pixels+s-package-size"
-                  v-model="protocol.s.maxPacketSize"
-                  @change="saveOptionsToServer"
+            type="number"
+            min="1"
+            max="5000"
+            id="protocol-pixels+s-package-size"
+            v-model="protocol.s.maxPacketSize"
+            @change="saveOptionsToServer"
           />
         </label>
-        <label for="protocol-pixels+s-package-size" title="if packet to send is bigger it will be split in fragments">
+        <label
+          for="protocol-pixels+s-package-size"
+          title="if packet to send is bigger it will be split in fragments"
+        >
           Version
           <input
-                  type="number"
-                  min="0"
-                  max="7"
-                  id="protocol-pixels+s-version"
-                  v-model="protocol.s.header.version"
-                  @change="saveOptionsToServer"
+            type="number"
+            min="0"
+            max="7"
+            id="protocol-pixels+s-version"
+            v-model="protocol.s.header.version"
+            @change="saveOptionsToServer"
           />
         </label>
         <label for="protocol-pixels+s-downstream" class="highlighted">
           Downstream flag
-          <input @change="saveOptionsToServer" v-model="protocol.s.header.downstreamFlag" type="checkbox" id="protocol-pixels+s-downstream"/>
+          <input
+            @change="saveOptionsToServer"
+            v-model="protocol.s.header.downstreamFlag"
+            type="checkbox"
+            id="protocol-pixels+s-downstream"
+          />
         </label>
-        <label for="protocol-pixels+s-type" title="if packet to send is bigger it will be split in fragments">
+        <label
+          for="protocol-pixels+s-type"
+          title="if packet to send is bigger it will be split in fragments"
+        >
           Type
           <input
-                  type="number"
-                  min="0"
-                  max="7"
-                  id="protocol-pixels+s-type"
-                  v-model="protocol.s.header.type"
-                  @change="saveOptionsToServer"
+            type="number"
+            min="0"
+            max="7"
+            id="protocol-pixels+s-type"
+            v-model="protocol.s.header.type"
+            @change="saveOptionsToServer"
           />
         </label>
         <label for="protocol-pixels+s-node-id"
-        >Node ID
+          >Node ID
           <input
-                  type="number"
-                  min="1"
-                  max="255"
-                  id="protocol-pixels+s-node-id"
-                  v-model="protocol.s.message.nodeId"
-                  @change="saveOptionsToServer"
+            type="number"
+            min="1"
+            max="255"
+            id="protocol-pixels+s-node-id"
+            v-model="protocol.s.message.nodeId"
+            @change="saveOptionsToServer"
           />
         </label>
         <label for="protocol-pixels+s-node-session"
-        >Session
+          >Session
           <input
-                  type="number"
-                  min="1"
-                  max="255"
-                  id="protocol-pixels+s-node-session"
-                  v-model="protocol.s.message.session"
-                  @change="saveOptionsToServer"
+            type="number"
+            min="1"
+            max="255"
+            id="protocol-pixels+s-node-session"
+            v-model="protocol.s.message.session"
+            @change="saveOptionsToServer"
           />
         </label>
       </details>
       <label for="compression-checkbox" class="highlighted">
         Brotli compress
-        <input @change="saveOptionsToServer" v-model="compression.enabled" type="checkbox" id="compression-checkbox"/>
+        <input
+          @change="saveOptionsToServer"
+          v-model="protocol.s.header.compressedFlag"
+          type="checkbox"
+          id="compression-checkbox"
+        />
       </label>
       <details>
-        <summary>Brotli settings <a class="help-link" title="brotli.js github page" href="https://github.com/foliojs/brotli.js?files=1" target="_blank">❔</a></summary>
+        <summary
+          >Brotli settings
+          <a
+            class="help-link"
+            title="brotli.js github page"
+            href="https://github.com/foliojs/brotli.js?files=1"
+            target="_blank"
+            >❔</a
+          ></summary
+        >
 
         <label for="compression-quality">
           Quality (0-11)
           <input
-                  type="number"
-                  min="0"
-                  max="11"
-                  id="compression-quality"
-                  v-model="compression.quality"
-                  @change="saveOptionsToServer"
+            type="number"
+            min="0"
+            max="11"
+            id="compression-quality"
+            v-model="compression.quality"
+            @change="saveOptionsToServer"
           />
         </label>
         <label for="compression-lgwin">
           lgwin (window size)
           <input
-                  type="number"
-                  min="0"
-                  max="22"
-                  id="compression-lgwin"
-                  v-model="compression.lgwin"
-                  @change="saveOptionsToServer"
+            type="number"
+            min="0"
+            max="22"
+            id="compression-lgwin"
+            v-model="compression.lgwin"
+            @change="saveOptionsToServer"
           />
         </label>
-
       </details>
     </fieldset>
     <fieldset>
@@ -180,107 +230,176 @@
           id="type-rgb"
           name="led-type"
           value="rgb"
-          v-model="leds.ledType"
+          v-model="protocol.pixels.type"
           @change="saveOptionsToServer"
       /></label>
-      <label for="type-rgbw">RGBW
-      <input
-        type="radio"
-        id="type-rgbw"
-        name="led-type"
-        value="rgbw"
-        v-model="leds.ledType"
-        @change="saveOptionsToServer"
-      />
+      <label for="type-rgbw"
+        >RGBW
+        <input
+          type="radio"
+          id="type-rgbw"
+          name="led-type"
+          value="rgbw"
+          v-model="protocol.pixels.type"
+          @change="saveOptionsToServer"
+        />
       </label>
       <label for="dimmer" class="highlighted">
         Master brightness
+        <div style="display:flex; width: 100%">
         <input
-                type="range"
-                id="dimmer"
-                min="1"
-                max="100"
-                v-model="leds.masterBrightness"
+          type="range"
+          id="dimmer"
+          min="1"
+          max="100"
+          v-model="leds.masterBrightness"
         />
+          <input
+                  min="0"
+                  max="100"
+                  type="number"
+                  class="pixel-amount"
+                  id="brightness-input"
+                  v-model="leds.masterBrightness"
+                  @change="saveOptionsToServer"
+          />
+        </div>
       </label>
       <label class="highlighted">Number of leds</label>
-      <input
-              type="range"
-              id="pixel-amount-range"
-              min="1"
-              max="2000"
-              v-model="leds.pixelAmount"
-              @change="saveOptionsToServer"
-      />
-      <input
-              type="number"
-              class="pixel-amount"
-              id="pixel-amount"
-              v-model="leds.pixelAmount"
-              @change="saveOptionsToServer"
-      />
+      <div style="display:flex;">
+        <input
+                type="range"
+                id="pixel-amount-range"
+                min="1"
+                max="2000"
+                v-model="leds.pixelAmount"
+                @change="saveOptionsToServer"
+        />
+
+        <input
+                type="number"
+                class="pixel-amount"
+                id="pixel-amount"
+                v-model="leds.pixelAmount"
+                @change="saveOptionsToServer"
+        />
+      </div>
+
     </fieldset>
     <fieldset>
       <legend>Stats</legend>
+      <p v-if="!webSocketConnected">⚠️ Lost connection to backend :-(</p>
       <label class="highlighted">Preview as</label>
       <label for="output-hex"
-      >HEX<input
-              type="radio"
-              id="output-hex"
-              name="output-type"
-              value="hex"
-              v-model="leds.outputType"
-              @change="saveOptionsToServer"
+        >HEX<input
+          type="radio"
+          id="output-hex"
+          name="output-type"
+          value="hex"
+          v-model="leds.outputType"
+          @change="saveOptionsToServer"
       /></label>
       <label for="output-int"
-      >INT<input
-              type="radio"
-              id="output-int"
-              name="output-type"
-              value="int"
-              v-model="leds.outputType"
-              @change="saveOptionsToServer"
+        >INT<input
+          type="radio"
+          id="output-int"
+          name="output-type"
+          value="int"
+          v-model="leds.outputType"
+          @change="saveOptionsToServer"
       /></label>
-      <p v-if="!binOutput">current packets per Frame: {{ packetCountPerFrame }} </p>
-
+      <ul class="stats">
+        <li v-if="leds.protocol==='pixels+s'">
+          <span>
+            Packet count
+          </span>
+          <span>
+            {{ stats.packetSizes.length }}
+          </span>
+        </li>
+        <li v-if="leds.protocol==='pixels+s'">
+          <span>
+            Packet sizes
+          </span>
+          <span>
+            {{ stats.packetSizes.length ? stats.packetSizes.join(' / '): '-' }}
+          </span>
+        </li>
+        <li>
+          <span>
+            Payload <span v-if="protocol.s.header.compressedFlag">before compression</span>
+          </span>
+          <span>
+            {{ stats.payloadBeforeCompression }}
+          </span>
+        </li>
+        <li v-if="protocol.s.header.compressedFlag">
+          <span>
+            Payload after compression
+          </span>
+          <span>
+            {{ stats.payloadAfterCompression }}
+          </span>
+        </li>
+        <li>
+          <span>
+            Frame size
+          </span>
+          <span>
+            {{ stats.frameSize }}
+          </span>
+        </li>
+      </ul>
     </fieldset>
-      <fieldset class="slider-wrapper">
-        <legend>Auto send</legend>
+    <fieldset class="slider-wrapper">
+      <legend>Auto send</legend>
 
-          <input
-                  type="range"
-                  id="timer-fps"
-                  min="1"
-                  max="1000"
-                  v-model="timer.duration"
-                  @change="startTimer"
-          />
+      <input
+        type="range"
+        id="autoSendTimer-duration"
+        min="1"
+        max="1000"
+        v-model="autoSendTimer.duration"
+        @change="startTimer"
+      />
 
-        <label for="duration-interval">
-          Interval
-          <input
-                  type="number"
-                  class="pixel-amount"
-                  id="duration-interval"
-                  v-model="timer.duration"
-                  @change="saveOptionsToServer"
-          />
-        </label>
-        <label for="duration-fps">
-          FPS
-          <input
-                  disabled
-                  type="number"
-                  class="pixel-amount"
-                  id="duration-fps"
-                  v-model="timer.duration"
-                  @change="saveOptionsToServer"
-          />
-        </label>
+      <label for="duration-interval">
+        Interval (ms)
+        <input
+                min="1"
+                max="1000"
+          type="number"
+          class="pixel-amount"
+          id="duration-interval"
+          v-model="autoSendTimer.duration"
+          @change="saveOptionsToServer"
+        />
+      </label>
+      <label for="duration-fps">
+        FPS
+        <input
+          type="number"
+          class="pixel-amount"
+          id="duration-fps"
+          min="1"
+          max="1000"
+          v-model="currentFps"
+          @change="saveOptionsToServer"
+        />
+      </label>
+      <component-random :leds="leds" @handler="setGetFrameHandler" @frame="output"></component-random>
 
-          <button type="button" :class="this.timerIntervalId ? 'active' : ''" @click="toggleTimer">{{timerButtonText}}</button>
-          <button type="button" v-if="binOutput" @click="saveFrame">💾 Frame</button>
-      </fieldset>
+      <button
+        type="button"
+        :class="this.autoSendTimerIntervalId ? 'active' : ''"
+        @click="toggleTimer"
+      >
+        {{ autoSendTimerButtonText }}
+      </button>
+      <button type="button" v-if="binOutput" @click="saveFrame">
+        💾 Frame
+      </button>
+    </fieldset>
     <textarea v-model="guiOutput"></textarea>
   </form>
 </template>
@@ -289,25 +408,26 @@ module.exports = {
   data() {
     return {
       webSocketConn: new WebSocket("ws://localhost:8080"),
+      webSocketConnected: false,
       packetCountPerFrame: 0,
-      timerIntervalId: null,
-      singleFrame: null,
+      autoSendTimerIntervalId: null,
+      statsFetchTimerIntervalId: null,
+      currentFrame: [],
       binOutput: null,
       guiOutput: null,
       leds: {
         pixelAmount: 10,
-        ledType: "rgb",
         outputType: "hex",
         protocol: "pixels",
         masterBrightness: 15
       },
-      timer: {
-        duration: 1000,
+      autoSendTimer: {
+        duration: 1000
       },
       serverOptions: {
         //The ip & port for sending incoming websocket packets via udp
         udpTargetIp: "localhost",
-        udpTargetPort: "1234",
+        udpTargetPort: "1234"
       },
       protocol: {
         s: {
@@ -321,98 +441,157 @@ module.exports = {
           message: {
             nodeId: 23,
             session: 25
-          },
+          }
         },
         pixels: {
+          type: "rgb",
           syncWord: 0,
           channelNumber: 0
-        },
+        }
       },
       compression: {
-        enabled: false,
         mode: 0,
         quality: 11,
         lgwin: 22
       },
       stats: {
-        packetCountPerFrame: 0,
+        packetSizes: [],
         payloadBeforeCompression: 0,
-        payloadAfterCompression: 0
+        payloadAfterCompression: 0,
+        frameSize: 0
       }
     };
   },
   computed: {
-    isLocal: function() {
+    currentFps: {
+      // getter
+      get: function () {
+        return Math.round(1000 / this.autoSendTimer.duration)
+      },
+      // setter
+      set: function (newValue) {
+        this.autoSendTimer.duration = Math.round(1000 / newValue)
+      }
+    },
+    isLocal() {
       return (
         location.hostname === "localhost" || location.hostname === "127.0.0.1"
       );
     },
-    timerButtonText: function () {
-      return this.timerIntervalId === null ? "Start" : "Stop"
+    autoSendTimerButtonText() {
+      return this.autoSendTimerIntervalId === null ? "Start" : "Stop";
     }
   },
   mounted() {
     // load state from localstorage
-    const state = window.testhelpers.loadState('input-form')
+    const state = window.testhelpers.loadState("input-form");
     // set initial options
     this.setOptions();
-    // output one frame
-    this.output()
-    Object.keys(state).map(key => this[key] = Object.assign(this[key], state[key]))
+    Object.keys(state).map(
+            key => (this[key] = Object.assign(this[key], state[key]))
+    );
     // set handler for receiving messages
-    this.webSocketConn.onmessage = async (evt) => {
-      const buffer = await evt.data.arrayBuffer()
-      const binOutput = new Uint8Array(buffer)
-      this.binOutput = binOutput
-      this.guiOutput = (this.leds.outputType === "hex") ? this.toHexString(binOutput) : binOutput;
+    this.webSocketConn.onmessage = async evt => {
+      const buffer = await evt.data.arrayBuffer();
+      const binOutput = new Uint8Array(buffer);
+      this.binOutput = binOutput;
+      this.guiOutput =
+        this.leds.outputType === "hex"
+          ? this.toHexString(binOutput)
+          : binOutput;
+    };
 
+    this.webSocketConn.onopen = () => {
+      this.webSocketConnected = true
+    };
+
+    this.webSocketConn.onerror = () => {
+      this.webSocketConnected = false
     };
     // set handler to save settings on change
-    this.$refs["input-form"].addEventListener('change', ()=>{
-      const data = Object.assign({},this.$data)
-      const {leds, serverOptions, timer, compression, stats} = data
-      window.testhelpers.saveState('input-form', {leds, serverOptions, timer, stats, compression})
-    })
+    this.$refs["input-form"].addEventListener("change", () => {
+      const data = Object.assign({}, this.$data);
+      const { leds, serverOptions, autoSendTimer, compression, protocol } = data;
+      window.testhelpers.saveState("input-form", {
+        leds,
+        serverOptions,
+        autoSendTimer,
+        compression,
+        protocol
+      });
+    });
   },
   methods: {
-    saveOptionsToServer() {
-      this.output()
-      this.setOptions()
+    setGetFrameHandler(fn) {
+      this.getFrame = fn
     },
-    output() {
-      const rawPayload = this.getRandomPixelData(this.leds.pixelAmount, this.leds.ledType)
+    saveOptionsToServer() {
+      this.getFrame();
+      this.setOptions();
+      this.fetchStats()
+    },
+    output(frameData) {
+      if(!frameData || !frameData.length) {
+        return
+      }
+      // set current Frame (used for preview output)
+      this.currentFrame = frameData
       // add dimmer...
-      const payload = rawPayload.map(channel => {
-        return Math.ceil(channel * (this.leds.masterBrightness / 100))
-      })
+      const payload = frameData.map(channel => {
+        return Math.ceil(channel * (this.leds.masterBrightness / 100));
+      });
 
       if (this.webSocketConn.readyState === 1) {
-          this.webSocketConn.send(new Uint8Array(payload));
+        this.webSocketConnected = true
+        this.webSocketConn.send(new Uint8Array(payload));
       }
     },
     toggleTimer() {
-      if (this.timerIntervalId === null) {
-        this.saveOptionsToServer()
-        this.output()
+      if (this.autoSendTimerIntervalId === null) {
+        this.saveOptionsToServer();
+        this.getFrame()
         this.startTimer();
+        this.startFetchStats()
       } else {
-        clearInterval(this.timerIntervalId);
-        this.timerIntervalId = null
+        clearInterval(this.autoSendTimerIntervalId);
+        this.autoSendTimerIntervalId = null;
+        this.stopFetchStats()
       }
     },
     startTimer() {
-      clearInterval(this.timerIntervalId);
+      clearInterval(this.autoSendTimerIntervalId);
       // Store the id of the interval so we can clear it later
-      this.timerIntervalId = setInterval(() => {
-        this.output();
-      }, this.timer.duration);
+      this.autoSendTimerIntervalId = setInterval(() => {
+        this.getFrame()
+      }, this.autoSendTimer.duration);
     },
-    // generate a test payload
-    getRandomPixelData(pixelAmount, ledType) {
-      const bytesPerPixel = ledType === "rgbw" ? 4 : 3;
-      return Array.from({ length: pixelAmount * bytesPerPixel }, () =>
-        Math.floor(Math.random() * 255)
-      );
+    startFetchStats() {
+      clearInterval(this.statsFetchTimerIntervalId);
+      // Store the id of the interval so we can clear it later
+      this.statsFetchTimerIntervalId = setInterval(() => {
+        this.fetchStats();
+      }, 500);
+    },
+    stopFetchStats() {
+      clearInterval(this.statsFetchTimerIntervalId);
+      this.statsFetchTimerIntervalId = null;
+    },
+    fetchStats() {
+      fetch("http://localhost:3002?action=getStats", {
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        method: "POST",
+        body: JSON.stringify({})
+      })
+              .then(function(response) {
+                return response.json();
+              })
+              .then(data => {
+                if (data.result !== true) {
+                  alert("Error saving new options to udp relay.");
+                } else {
+                  this.stats = data.stats
+                }
+              });
     },
     toHexString(bytes) {
       return bytes.reduce(
@@ -424,7 +603,12 @@ module.exports = {
       fetch("http://localhost:3002?action=setOptions", {
         headers: { "Content-Type": "application/json; charset=utf-8" },
         method: "POST",
-        body: JSON.stringify({serverOptions: this.serverOptions, leds: this.leds, compression: this.compression})
+        body: JSON.stringify({
+          serverOptions: this.serverOptions,
+          leds: this.leds,
+          compression: this.compression,
+          protocol: this.protocol
+        })
       })
         .then(function(response) {
           return response.json();
@@ -436,14 +620,14 @@ module.exports = {
         });
     },
     saveFrame() {
-        window.testhelpers.createAndDownloadBlobFile(this.binOutput, 'pixel-out')
+      window.testhelpers.createAndDownloadBlobFile(this.binOutput, "pixel-out");
     }
   }
 };
 </script>
 <style>
 form {
- display: flex;
+  display: flex;
   flex-wrap: wrap;
 }
 
@@ -458,6 +642,7 @@ fieldset {
 }
 
 label {
+  cursor: pointer;
   color: whitesmoke;
   display: flex;
   flex-wrap: wrap;
@@ -465,11 +650,11 @@ label {
   width: 100%;
 }
 
-label input[type=text] {
+label input[type="text"] {
   width: 100%;
 }
 
-input[type=number] {
+input[type="number"] {
   width: 40%;
 }
 
@@ -487,11 +672,14 @@ input:disabled {
   color: #fff;
 }
 
-input[type="radio"], range, button {
+input[type="radio"],
+range,
+button {
   cursor: pointer;
 }
 
-input[type="text"], input[type="number"] {
+input[type="text"],
+input[type="number"] {
   padding: 10px;
 }
 
@@ -510,7 +698,15 @@ button {
   max-width: 100%;
 }
 
-button.primary, button.active {
+button.small {
+  line-height: 1;
+  padding: 5px;
+  font-size: 0.8em;
+  min-width: initial;
+}
+
+button.primary,
+button.active {
   background-color: tomato;
   color: whitesmoke;
 }
@@ -532,21 +728,44 @@ summary {
   cursor: pointer;
 }
 
-  .highlighted {
-    color: tomato;
-    margin-bottom: 5px;
-  }
+.highlighted {
+  color: tomato;
+  margin-bottom: 5px;
+}
 
-  .help-link {
-    text-decoration: none;
-    background: dodgerblue;
-    padding: 2px;
-    display: inline-block;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 10px;
-    text-align: center;
-    margin-left: 10px;
+.help-link {
+  text-decoration: none;
+  background: dodgerblue;
+  padding: 2px;
+  display: inline-block;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  text-align: center;
+  margin-left: 10px;
+}
+
+ul.stats {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+ul.stats li {
+  color: #fff;
+  display: flex;
+  align-content: space-between;
+  padding: 5px 0;
+}
+ul.stats span {
+  display: block;
+
+}
+
+  ul.stats span:nth-child(2) {
+    flex-grow: 1;
+    text-align: right;
+    font-weight: bold;
+    color: dodgerblue;
   }
 </style>
