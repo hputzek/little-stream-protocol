@@ -19,7 +19,7 @@
                 ctx: null,
                 image: null,
                 canvasWidth: 144,
-                y: 0
+                y: 0,
             }
         },
         computed: {
@@ -39,18 +39,19 @@
             draw(frame) {
                 this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasWidth);
                 const pixels = this.frame.reduce((acc, colorChannel, index, frame) => {
-                    if(((index + 1) / this.channelCount) % this.canvasWidth === 0) {
+                    if(((index) / this.channelCount) % this.canvasWidth === 0) {
                         this.y ++
                     }
                     if(index % this.channelCount === 0) {
                         const colorModel = this.channelCount === 3 ? [0,0,0] : [0,0,0,0]
                         const color = colorModel.reduce((acc, channel, channelIndex) => [...acc, frame[channelIndex + index]] , [])
+                        const currentPixelNumber = index / this.channelCount
                         this.image.data[0] = color[0]
                         this.image.data[1] = color[1]
                         this.image.data[2] = color[2]
                         this.image.data[3] = 255
-                        //console.log('y = ' + this.y)
-                        this.ctx.putImageData(this.image, index / this.channelCount, this.y )
+
+                        this.ctx.putImageData(this.image, currentPixelNumber - (this.canvasWidth * this.y) , this.y * 2 )
                         return [...acc, color]
                     }
                     return acc
