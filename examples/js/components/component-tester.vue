@@ -272,7 +272,7 @@
                 min="1"
                 max="2000"
                 v-model="leds.pixelAmount"
-                @change="saveOptionsToServer"
+                @input="saveOptionsToServer"
         />
 
         <input
@@ -280,6 +280,7 @@
                 class="pixel-amount"
                 id="pixel-amount"
                 v-model="leds.pixelAmount"
+                @input="saveOptionsToServer"
         />
       </div>
 
@@ -358,7 +359,7 @@
         min="1"
         max="1000"
         v-model="autoSendTimer.duration"
-        @change="startTimer"
+        @input="startTimer"
       />
 
       <label for="duration-interval">
@@ -382,10 +383,10 @@
           min="1"
           max="1000"
           v-model="currentFps"
-          @change="saveOptionsToServer"
+          @change="startTimer"
         />
       </label>
-      <component-random :leds="leds" @handler="setGetFrameHandler" @frame="output"></component-random>
+      <component-random :leds="leds" :protocol="protocol" @handler="setGetFrameHandler" @frame="output"></component-random>
 
       <button
         type="button"
@@ -398,7 +399,7 @@
         💾 Frame
       </button>
     </fieldset>
-    <component-output style="width: 100%;" :leds="leds" :frame="currentFrame"></component-output>
+    <component-output style="width: 100%;" :protocol="protocol" :leds="leds" :frame="currentFrame"></component-output>
     <textarea v-model="guiOutput"></textarea>
   </form>
 </template>
