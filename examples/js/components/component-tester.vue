@@ -541,7 +541,7 @@ module.exports = {
         return Math.ceil(channel * (this.leds.masterBrightness / 100));
       });
 
-      if (this.webSocketConn.readyState === 1) {
+      if (this.webSocketConn.readyState === 1 && payload.length) {
         this.webSocketConnected = true
         this.webSocketConn.send(new Uint8Array(payload));
       }

@@ -63,6 +63,10 @@ let options = {
 
 const getFrame = (pixelData) => {
     const payload = options.protocol.s.header.compressedFlag ? compress(pixelData, options.compression)  : pixelData
+     if(!payload) {
+         console.log('no payload; skipping frame')
+         return []
+     }
     const pixelsData = pixels.getFrame(Object.assign(options.protocol.pixels, {payload: payload}))
     const sData = s.getFrame(Object.assign(options.protocol.s, {payload: pixelsData}));
     const packets = options.leds.protocol === "pixels" ? [pixelsData] : sData;
