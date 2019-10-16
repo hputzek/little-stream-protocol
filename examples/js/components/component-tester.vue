@@ -276,6 +276,8 @@
         />
 
         <input
+                min="1"
+                max="2000"
                 type="number"
                 class="pixel-amount"
                 id="pixel-amount"
@@ -288,6 +290,9 @@
     <fieldset>
       <legend>Stats</legend>
       <p v-if="!webSocketConnected">⚠️ Lost connection to backend :-(</p>
+      <ul class="error-messages-list" v-for="message in stats.errorMessages">
+        <li>⚠️ {{message}}</li>
+      </ul>
       <label class="highlighted">Preview as</label>
       <label for="output-hex"
         >HEX<input
@@ -458,7 +463,8 @@ module.exports = {
         packetSizes: [],
         payloadBeforeCompression: 0,
         payloadAfterCompression: 0,
-        frameSize: 0
+        frameSize: 0,
+        errorMessages: []
       }
     };
   },
@@ -767,5 +773,11 @@ ul.stats span {
     text-align: right;
     font-weight: bold;
     color: dodgerblue;
+  }
+
+  ul.error-messages-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 20px 0;
   }
 </style>

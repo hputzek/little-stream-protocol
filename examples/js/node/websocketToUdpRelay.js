@@ -57,14 +57,17 @@ let options = {
     packetSizes: [],
     payloadBeforeCompression: 0,
     payloadAfterCompression: 0,
-    frameSize: 0
+    frameSize: 0,
+    errorMessages: []
   }
 }
 
 const getFrame = (pixelData) => {
     const payload = options.protocol.s.header.compressedFlag ? compress(pixelData, options.compression)  : pixelData
      if(!payload) {
-         console.log('no payload; skipping frame')
+         const message = 'compression error; skipping frame'
+         console.log(message)
+         options.stats.errorMessages = [message]
          return []
      }
     const pixelsData = pixels.getFrame(Object.assign(options.protocol.pixels, {payload: payload}))
@@ -161,6 +164,7 @@ wss.on('connection', function(ws) {
 
   //When a message is received from ws client send it to udp server.
   ws.on('message', function(message) {
+    options.stats.errorMessages = []
     const msgBuff = new Buffer(message)
     const packets = getFrame(new Uint8Array(msgBuff))
     let fullFrame = packets.reduce(packet => {}, new Uint8Array())
