@@ -362,7 +362,7 @@
         type="range"
         id="autoSendTimer-duration"
         min="1"
-        max="1000"
+        max="500"
         v-model="autoSendTimer.duration"
         @input="startTimer"
       />
@@ -371,7 +371,7 @@
         Interval (ms)
         <input
                 min="1"
-                max="1000"
+                max="500"
           type="number"
           class="pixel-amount"
           id="duration-interval"
@@ -385,13 +385,14 @@
           type="number"
           class="pixel-amount"
           id="duration-fps"
-          min="1"
-          max="1000"
           v-model="currentFps"
-          @change="startTimer"
+          @change="saveOptionsToServer"
         />
       </label>
-      <component-random :leds="leds" :protocol="protocol" @handler="setGetFrameHandler" @frame="output"></component-random>
+        <select v-model="leds.activeTestingModeComponent">
+            <option v-for="testingMode in testingModes" :value="testingMode.component">{{testingMode.label}}</option>
+        </select>
+        <component :is="leds.activeTestingModeComponent" :leds="leds" :protocol="protocol" @handler="setGetFrameHandler" @frame="output"></component>
 
       <button
         type="button"
@@ -420,7 +421,18 @@ module.exports = {
       currentFrame: [],
       binOutput: null,
       guiOutput: null,
+        testingModes:[
+            {
+            component: 'component-random',
+            label: 'Random values'
+            },
+            {
+                component: 'component-snake',
+                label: 'Snake'
+            }
+        ],
       leds: {
+          activeTestingModeComponent: 'component-random',
         pixelAmount: 10,
         outputType: "hex",
         protocol: "pixels",
@@ -476,7 +488,9 @@ module.exports = {
       },
       // setter
       set: function (newValue) {
+          this.stopTimer()
         this.autoSendTimer.duration = Math.round(1000 / newValue)
+          this.startTimer()
       }
     },
     isLocal() {
@@ -559,11 +573,14 @@ module.exports = {
         this.startTimer();
         this.startFetchStats()
       } else {
-        clearInterval(this.autoSendTimerIntervalId);
-        this.autoSendTimerIntervalId = null;
-        this.stopFetchStats()
+       this.stopTimer()
       }
     },
+      stopTimer() {
+          clearInterval(this.autoSendTimerIntervalId);
+          this.autoSendTimerIntervalId = null;
+          this.stopFetchStats()
+      },
     startTimer() {
       clearInterval(this.autoSendTimerIntervalId);
       // Store the id of the interval so we can clear it later
@@ -593,7 +610,7 @@ module.exports = {
               })
               .then(data => {
                 if (data.result !== true) {
-                  alert("Error saving new options to udp relay.");
+                  console.log('Error fetching stats...')
                 } else {
                   this.stats = data.stats
                 }
@@ -646,6 +663,7 @@ fieldset {
   padding: 10px;
   flex-grow: 1;
   width: 200px;
+    max-width: 320px;
   border: 1px solid #666;
   border-radius: 1px;
   color: tomato;
@@ -668,7 +686,7 @@ input[type="number"] {
   width: 40%;
 }
 
-input {
+input, select {
   background-color: #555;
   font-size: 0.8em;
   color: tomato;
@@ -689,7 +707,8 @@ button {
 }
 
 input[type="text"],
-input[type="number"] {
+input[type="number"],
+select {
   padding: 10px;
 }
 
