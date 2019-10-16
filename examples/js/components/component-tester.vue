@@ -386,7 +386,7 @@
           @change="startTimer"
         />
       </label>
-      <component-random :leds="leds" @handler="setGetFrameHandler" @frame="output"></component-random>
+      <component-random :leds="leds" :protocol="protocol" @handler="setGetFrameHandler" @frame="output"></component-random>
 
       <button
         type="button"

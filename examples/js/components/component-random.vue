@@ -7,7 +7,7 @@
 
 <script>
     module.exports = {
-        props: ['leds'],
+        props: ['leds','protocol'],
         created() {
             this.$emit('handler', this.createFrame);
         },
@@ -19,7 +19,7 @@
         methods: {
             createFrame() {
                 this.framesSent+=1
-                this.$emit('frame', this.getRandomPixelData(this.leds.pixelAmount, this.leds.ledType))
+                this.$emit('frame', this.getRandomPixelData(this.leds.pixelAmount, this.protocol.pixels.type))
             },
             getRandomPixelData(pixelAmount, ledType) {
                 const bytesPerPixel = ledType === "rgbw" ? 4 : 3;

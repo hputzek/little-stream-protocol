@@ -39,16 +39,15 @@
                     if(index % this.channelCount === 0) {
                         const colorModel = this.channelCount === 3 ? [0,0,0] : [0,0,0,0]
                         const color = colorModel.reduce((acc, channel, channelIndex) => [...acc, frame[channelIndex + index]] , [])
-                        image.data[index + currentPixel + 0] = color[0]
-                        image.data[index +currentPixel + 1] = color[1]
-                        image.data[index +currentPixel + 2] = color[2]
-                        image.data[index +currentPixel + 3] = 255
-                        currentPixel+=1
+                        image.data[currentPixel + 0] = color[0]
+                        image.data[currentPixel + 1] = color[1]
+                        image.data[currentPixel + 2] = color[2]
+                        image.data[currentPixel + 3] = 255
+                        currentPixel+=4
                         return [...acc, color]
                     }
                     return acc
                 }, [])
-                console.log(image.data)
                 window.requestAnimationFrame(() => {
                     this.ctx.putImageData(image, 0,0)
                 })
