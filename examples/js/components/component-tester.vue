@@ -597,6 +597,8 @@ module.exports = {
                 } else {
                   this.stats = data.stats
                 }
+              }).catch((error) => {
+                  this.webSocketConnected = false
               });
     },
     toHexString(bytes) {
@@ -623,7 +625,9 @@ module.exports = {
           if (data.result !== true) {
             alert("Error saving new options to udp relay.");
           }
-        });
+        }).catch((error) => {
+        this.webSocketConnected = false
+      });
     },
     saveFrame() {
       window.testhelpers.createAndDownloadBlobFile(this.binOutput, "pixel-out");
