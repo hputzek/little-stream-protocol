@@ -25,20 +25,22 @@ const testPayload = getRandomPixelData(800, 'rgb')
  * For available parameters please look at the default options in the 'getFrame' function
  * @type {ArrayBuffer}
  */
-const pixelsOnly = pixels.getFrame({ payload: testPayload })
+const pixelsOnly = pixels.getFrame({ payload: testPayload})
 
 /**
  * get s encoded output
  * For available parameters please look at the default options in the 'getFrame' function
  * @type {ArrayBuffer}
  */
-const sOnly = s.getFrame({ payload: testPayload.buffer })
+const sOnly = s.getFrame({
+  payload: testPayload.buffer,
+  header: { version: 7 }
+})
 
 // get output from pixels + s combined
 const pixelsPlusS = s.getFrame({
   payload: pixels.getFrame({ payload: testPayload })
 })
-
 // log the results to console
 console.log('pixels only:')
 console.log(pixelsOnly)
