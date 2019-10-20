@@ -25,11 +25,13 @@ const testPayload = getRandomPixelData(800, 'rgb')
  * For available parameters please look at the default options in the 'getFrame' function
  * @type {ArrayBuffer}
  */
-const pixelsOnly = pixels.getFrame({ payload: testPayload})
+const pixelsOnly = pixels.getFrame({ payload: testPayload })
 
 /**
  * get s encoded output
  * For available parameters please look at the default options in the 'getFrame' function
+ *
+ * This is also an example for how to use parameters for the protocol settings / flags
  * @type {ArrayBuffer}
  */
 const sOnly = s.getFrame({
