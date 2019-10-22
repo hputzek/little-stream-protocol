@@ -30,9 +30,14 @@ const pixelsOnly = pixels.getFrame({ payload: testPayload })
 /**
  * get s encoded output
  * For available parameters please look at the default options in the 'getFrame' function
+ *
+ * This is also an example for how to use parameters for the protocol settings / flags
  * @type {ArrayBuffer}
  */
-const sOnly = s.getFrame({ payload: testPayload.buffer })
+const sOnly = s.getFrame({
+  payload: testPayload.buffer,
+  header: { version: 7 }
+})
 
 // get output from pixels + s combined
 const pixelsPlusS = s.getFrame({
