@@ -450,14 +450,14 @@ module.exports = {
         s: {
           maxPacketSize: 1470,
           header: {
-            version: 4,
+            version: 0,
             downstreamFlag: true,
             compressedFlag: false,
             type: 1
           },
           message: {
-            nodeId: 23,
-            session: 25
+            nodeId: 1,
+            session: 1
           }
         },
         pixels: {
