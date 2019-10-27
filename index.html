@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Testing tool</title>
+
+    <style type="text/css" data-resource="https://codepen.io/Sarah_C/pen/zKdkqK">
+        /* ------------------- */
+        /* TEMPLATE        -- */
+        /* ----------------- */
+
+        @import url(https://fonts.googleapis.com/css?family=Lato:400,700,900,300);
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: #333;
+            font-size: 1rem;
+            font-family: 'Lato', sans-serif;
+            color: whitesmoke;
+            padding: 2vw
+        }
+
+        h1 { font-size: 2em; color: whitesmoke; font-weight: 400; margin-bottom: 0.5em;  text-align: center}
+        p { font-size: 1em; color: whitesmoke; margin-bottom: 1em; margin-top: 0; }
+        a { color: dodgerblue; text-decoration: none; border-bottom: 1px dotted; }
+        a:hover { color: tomato; }
+    </style>
+</head>
+
+<body>
+<div id="app">
+    <component-welcome></component-welcome>
+    <component-tester></component-tester>
+</div>
+
+<script type="module">
+    // haha, stupid way of using modules but for this use case it ok I guess
+    import { pixels, s } from './js/lib/index.js'
+    import * as testHelpers from './js/helpers.js'
+    window.pixels = {}
+    window.s = {}
+    window.s.getFrame = s.getFrame
+    window.pixels.getFrame = pixels.getFrame
+    window.testhelpers = {}
+    window.testhelpers = testHelpers
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.3/vue.min.js"></script>
+<script src="https://unpkg.com/http-vue-loader"></script>
+<script>
+
+    httpVueLoader.register(Vue, 'js/components/component-welcome.vue');
+    httpVueLoader.register(Vue, 'js/components/component-tester.vue');
+    httpVueLoader.register(Vue, 'js/components/component-random.vue');
+    httpVueLoader.register(Vue, 'js/components/component-output.vue');
+    httpVueLoader.register(Vue, 'js/components/component-snake.vue');
+
+
+    // 初始化 vue
+    new Vue({
+        el: '#app',
+        components: [
+            'component-welcome', 'component-tester'
+        ],
+        data() {
+
+        }
+    });
+</script>
+
+</body>
+
+</html>
