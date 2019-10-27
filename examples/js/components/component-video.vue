@@ -75,21 +75,18 @@
 
                 this.ctx.drawImage(this.videoElement,0,0,this.settings.matrixWidth,this.settings.matrixHeight);
                 // Read image from canvas
-                const frame = this.ctx.getImageData(0, 0, this.settings.matrixWidth, this.settings.matrixWidth);
-
+                const frame = this.ctx.getImageData(0, 0, this.settings.matrixWidth, this.settings.matrixHeight);
                 // Byte progression is R,G,B,A (We discard the 4th value)
                 if(this.bytesPerPixel === 4) {
-                    return frame.data
+                    return frame.data.slice(0,pixelAmount * this.bytesPerPixel)
                 } else {
                     return frame.data.reduce((acc, current, index)=>{
-                        if(index % 4 !== 0) {
+                        if((index + 1) % 4 !== 0) {
                             acc = [...acc, current]
                         }
                         return acc.slice(0,pixelAmount * this.bytesPerPixel)
                     },[])
                 }
-
-               return output
             }
         }
     }
