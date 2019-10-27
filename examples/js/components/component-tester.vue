@@ -392,7 +392,7 @@
         <select v-model="leds.activeTestingModeComponent">
             <option v-for="testingMode in testingModes" :value="testingMode.component">{{testingMode.label}}</option>
         </select>
-        <component :is="leds.activeTestingModeComponent" :leds="leds" :protocol="protocol" @handler="setGetFrameHandler" @frame="output"></component>
+        <component :is="leds.activeTestingModeComponent" :leds="leds" :protocol="protocol" @handler="setGetFrameHandler" @frame="output" @play="startTimer" @stop="stopTimer"></component>
 
       <button
         type="button"
@@ -429,7 +429,11 @@ module.exports = {
             {
                 component: 'component-snake',
                 label: 'Snake'
-            }
+            },
+          {
+            component: 'component-video',
+            label: 'Video matrix'
+          }
         ],
       leds: {
           activeTestingModeComponent: 'component-random',
