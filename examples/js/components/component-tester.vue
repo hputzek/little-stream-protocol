@@ -401,12 +401,9 @@
       >
         {{ autoSendTimerButtonText }}
       </button>
-      <button type="button" v-if="binOutput" @click="saveFrame">
-        💾 Frame
-      </button>
     </fieldset>
     <component-output style="width: 100%;" :protocol="protocol" :leds="leds" :frame="currentFrame"></component-output>
-    <textarea v-model="guiOutput"></textarea>
+    <component-bin-preview :gui-output="guiOutput"></component-bin-preview>
   </form>
 </template>
 <script>
@@ -420,7 +417,7 @@ module.exports = {
       statsFetchTimerIntervalId: null,
       currentFrame: [],
       binOutput: null,
-      guiOutput: null,
+      guiOutput: [],
         testingModes:[
             {
             component: 'component-random',
@@ -515,10 +512,7 @@ module.exports = {
       const buffer = await evt.data.arrayBuffer();
       const binOutput = new Uint8Array(buffer);
       this.binOutput = binOutput;
-      this.guiOutput =
-        this.leds.outputType === "hex"
-          ? this.toHexString(binOutput)
-          : binOutput;
+      this.addOutputFrame(binOutput)
     };
 
     this.webSocketConn.onopen = () => {
@@ -544,6 +538,15 @@ module.exports = {
   methods: {
     setGetFrameHandler(fn) {
       this.getFrame = fn
+    },
+    addOutputFrame(binOutput) {
+      if(this.guiOutput.length > 4) {
+        this.guiOutput.shift()
+      }
+      this.guiOutput.push(
+              this.leds.outputType === "hex"
+                      ? this.toHexString(binOutput)
+                      : binOutput);
     },
     saveOptionsToServer() {
       this.getFrame();
@@ -645,9 +648,6 @@ module.exports = {
         }).catch((error) => {
         this.webSocketConnected = false
       });
-    },
-    saveFrame() {
-      window.testhelpers.createAndDownloadBlobFile(this.binOutput, "pixel-out");
     }
   }
 };
@@ -738,17 +738,6 @@ button.primary,
 button.active {
   background-color: tomato;
   color: whitesmoke;
-}
-
-textarea {
-  width: 100%;
-  height: 50vh;
-  margin: 10px;
-  padding: 10px;
-  border-radius: 2px;
-  font-family: monospace;
-  background: none;
-  color: #ccc;
 }
 
 summary {
