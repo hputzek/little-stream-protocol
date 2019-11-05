@@ -39,6 +39,7 @@
         padding: 10px 10px;
     }
     p {
+        width: 100%;
         max-height: 120px;
         overflow-y: scroll;
         margin-bottom: 0;

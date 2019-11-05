@@ -546,7 +546,11 @@ module.exports = {
       this.guiOutput.push(
               this.leds.outputType === "hex"
                       ? this.toHexString(binOutput)
-                      : binOutput);
+                      : this.toIntString(binOutput));
+    },
+    toIntString(object) {
+      // add zeros and convert to string
+      return Object.values(object).map(val => ('000' + val).slice(-3)).join(' ')
     },
     saveOptionsToServer() {
       this.getFrame();
