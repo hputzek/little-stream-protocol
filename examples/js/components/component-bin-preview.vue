@@ -37,7 +37,10 @@
         background-color: rgba(0,0,0,0.2);
         margin: 10px 0;
         padding: 10px 10px;
+    }
+    p {
         max-height: 120px;
         overflow-y: scroll;
+        margin-bottom: 0;
     }
 </style>

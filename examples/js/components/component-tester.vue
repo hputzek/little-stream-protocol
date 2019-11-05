@@ -96,7 +96,7 @@
         <summary
           >s settings<a
             class="help-link"
-            href="https://iotpanic.github.io"
+            href="https://github.com/IoTPanic/s"
             title="s github page"
             >❔</a
           ></summary
