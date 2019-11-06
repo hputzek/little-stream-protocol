@@ -167,9 +167,9 @@ wss.on('connection', function(ws) {
     options.stats.errorMessages = []
     const msgBuff = new Buffer(message)
     const packets = getFrame(new Uint8Array(msgBuff))
-    let fullFrame = packets.reduce(packet => {}, new Uint8Array())
-    ws.send(concatArrayBuffers(...packets))
+    //ws.send(concatArrayBuffers(...packets))
     packets.map(packet => {
+        ws.send(packet)
       udpServer.send(new Uint8Array(packet), 0, packet.byteLength, options.serverOptions.udpTargetPort, options.serverOptions.udpTargetIp)
     });
   })

@@ -1,23 +1,11 @@
 import { s, pixels } from '../lib/index.js'
-
-/**
- * We need a test payload, this is what this function provides
- * Returns a flat array with r,g,b(,w) values from 0 to 255
- * @param pixelAmount
- * @param type
- */
-const getRandomPixelData = (pixelAmount, type) => {
-  const bytesPerPixel = type === 'rgbw' ? 4 : 3
-  return Uint8Array.from({ length: pixelAmount * bytesPerPixel }, () =>
-    Math.floor(Math.random() * 255)
-  )
-}
+import { getRandomPixelData } from '../lib/helpers.js'
 
 /**
  * Create a test payload with 800 pixels = 800 x r,g,b  which sums up to 2400 Uint8 values
  * @type {Uint8Array}
  */
-const testPayload = getRandomPixelData(800, 'rgb')
+const testPayload = Uint8Array.from(getRandomPixelData(800, 'rgb'))
 
 /**
  * get pixel encoded output

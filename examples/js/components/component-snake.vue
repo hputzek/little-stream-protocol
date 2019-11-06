@@ -89,7 +89,7 @@ module.exports = {
           }
       }
       this.positionCounter += 1;
-      if (this.positionCounter > pixelAmount) {
+      if (this.positionCounter > pixelAmount -1) {
         this.positionCounter = 0;
       }
       return output;
