@@ -29,8 +29,8 @@ const pixelsPlusSFrame = s.getFrame({
 const udp = dgram.createSocket('udp4')
 // pixelsPlusS is an array which contains 1-x packets
 pixelsPlusSFrame.map(packet => {
-  console.log(packet)
-  console.log(new Uint8Array(packet)) // uncomment one of the logs and use the one you prefer
+  //console.log(packet) // uncomment one of the logs and use the one you prefer
+  console.log(new Uint8Array(packet))
   udp.send(new Uint8Array(packet), 0, packet.byteLength, 1234, '192.168.87.28')
 })
 process.exit()
