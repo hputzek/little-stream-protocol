@@ -13,7 +13,7 @@ export const saveState = (key, state) => {
  */
 export const loadState = key => {
   const value = window.localStorage.getItem(key)
-  return value ?  JSON.parse(value) : {}
+  return value ? JSON.parse(value) : {}
 }
 
 /**

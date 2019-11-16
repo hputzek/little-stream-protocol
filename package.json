@@ -12,6 +12,7 @@
     "startClient": "browser-sync start -c bs-config.js",
     "startServer": "node --experimental-modules examples/js/node/websocketToUdpRelay.js",
     "test": "node  --experimental-modules examples/index.js",
+    "udp-test": "node  --experimental-modules examples/udp-test.js",
     "lintfix": "eslint --fix --format stylish --ext .js --ignore-path .gitignore .",
     "build": "cp -r lib examples/js"
   },
