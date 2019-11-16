@@ -5,7 +5,7 @@ import * as dgram from 'dgram'
 const settings = {
   ip: '',
   port: 1234,
-  testPayloadSize: 800 // led count
+  testPayloadSize: 10 // led count
 }
 
 //Create a udp socket
@@ -18,8 +18,6 @@ const testPayload = Uint8Array.from(
   getRandomPixelData(settings.testPayloadSize, 'rgb')
 )
 
-console.log(`Payload byte length: ${testPayload.byteLength}`)
-
 /**
  * Create one frame of output from pixels + s
  */
@@ -31,9 +29,6 @@ const createPixelsPlusSFrame = payload =>
 
 const logOutput = pixelsPlusSFrame => {
   // pixelsPlusS is an array which contains 1-x packets
-  console.log(
-    ` ------- Frame number ${new Uint8Array(pixelsPlusSFrame[0])[3]} ------`
-  )
   pixelsPlusSFrame.map((packet, index) => {
     //console.log(packet) // uncomment one of the logs and use the one you prefer
     const payload = new Uint8Array(packet)
@@ -45,7 +40,7 @@ const logOutput = pixelsPlusSFrame => {
       fragment: payload[4]
     }
     if (index === 0) {
-      debugObject.byteLength = [payload[5], payload[7]]
+      debugObject.byteLength = [payload[5], payload[6]]
       debugObject.checksum = payload[7]
     }
     console.log(debugObject)
